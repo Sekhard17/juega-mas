@@ -9,16 +9,30 @@
     "lint": "next lint"
   },
   "dependencies": {
+    "@heroicons/react": "^2.2.0",
+    "@next/font": "^14.2.15",
+    "@supabase/supabase-js": "2.49.4",
+    "@tremor/react": "^3.18.7",
+    "bcryptjs": "3.0.2",
+    "cookies-next": "5.1.0",
+    "framer-motion": "^12.10.4",
+    "jose": "^6.0.10",
+    "jsonwebtoken": "9.0.2",
+    "next": "15.3.1",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
-    "next": "15.3.1"
+    "sonner": "2.0.3",
+    "zod": "3.24.3"
   },
   "devDependencies": {
-    "typescript": "^5",
+    "@types/bcryptjs": "^3.0.0",
+    "@types/jsonwebtoken": "^9.0.9",
     "@types/node": "^20",
     "@types/react": "^19",
     "@types/react-dom": "^19",
-    "@tailwindcss/postcss": "^4",
-    "tailwindcss": "^4"
+    "autoprefixer": "^10.4.21",
+    "postcss": "^8.5.3",
+    "tailwindcss": "3.4.1",
+    "typescript": "^5"
   }
 }
