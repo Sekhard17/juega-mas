@@ -6,6 +6,8 @@ import { verifyToken } from './lib/jwt';
 const publicRoutes = [
   '/',
   '/inicio',
+  '/main/inicio',
+  '/main/*',
   '/auth/login',
   '/auth/register',
   '/api/auth/login',
