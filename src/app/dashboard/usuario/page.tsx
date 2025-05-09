@@ -103,7 +103,7 @@ export default function UsuarioDashboardPage() {
         description="Aquí encontrarás tus próximas reservas"
         actions={
           <Link 
-            href="/inicio" 
+            href="/main/inicio" 
             className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-emerald-600 hover:bg-emerald-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-emerald-500"
           >
             Reservar espacio
