@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, use } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/providers/AuthProvider';
 import { reservasModel } from '@/models/reservasModel';
@@ -24,7 +24,8 @@ import {
 import { RoleGuard } from '@/components/dashboard';
 import Image from 'next/image';
 
-export default function DetalleReservaPage({ params }: { params: { id: string } }) {
+export default function DetalleReservaPage(props: { params: Promise<{ id: string }> }) {
+  const params = use(props.params);
   const router = useRouter();
   const { user } = useAuth();
   const [reserva, setReserva] = useState<Reserva | null>(null);

@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, use } from 'react';
 import { useRouter } from 'next/navigation';
 import { DashboardContainer } from '@/components/dashboard';
 import { RoleGuard } from '@/components/dashboard';
@@ -15,7 +15,8 @@ import {
   ExclamationTriangleIcon
 } from '@heroicons/react/24/outline';
 
-export default function DetalleIncidenciaPage({ params }: { params: { id: string } }) {
+export default function DetalleIncidenciaPage(props: { params: Promise<{ id: string }> }) {
+  const params = use(props.params);
   const router = useRouter();
   const [incidencia, setIncidencia] = useState<Incidencia | null>(null);
   const [cargando, setCargando] = useState(true);
