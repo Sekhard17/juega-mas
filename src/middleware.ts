@@ -12,6 +12,7 @@ const publicRoutes = [
   '/auth/register',
   '/api/auth/login',
   '/api/auth/register',
+  '/api/contacto',
   '/unauthorized',
   '/not-found',
   '/forbidden',

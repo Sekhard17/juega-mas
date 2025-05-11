@@ -37,6 +37,8 @@ export default function ContactoPage() {
   // Estados para errores
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [touched, setTouched] = useState<Record<string, boolean>>({});
+  // Estado para indicar cuando se está enviando el formulario
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   // Validar email
   const validarEmail = (email: string): boolean => {
@@ -140,17 +142,44 @@ export default function ContactoPage() {
       return;
     }
 
-    // Aquí iría la lógica de envío del formulario
-    toast.success('Mensaje enviado correctamente');
-    // Resetear formulario
-    setFormData({
-      nombre: '',
-      email: '',
-      asunto: '',
-      mensaje: '',
-      telefono: ''
-    });
-    setTouched({});
+    try {
+      // Activar estado de carga
+      setIsSubmitting(true);
+      
+      // Enviar datos al endpoint
+      const response = await fetch('/api/contacto', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(formData),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.error || 'Error al enviar el mensaje');
+      }
+
+      // Mostrar mensaje de éxito
+      toast.success('Mensaje enviado correctamente');
+      
+      // Resetear formulario
+      setFormData({
+        nombre: '',
+        email: '',
+        asunto: '',
+        mensaje: '',
+        telefono: ''
+      });
+      setTouched({});
+    } catch (error) {
+      console.error('Error al enviar el formulario:', error);
+      toast.error('Ocurrió un error al enviar el mensaje. Por favor, intenta nuevamente.');
+    } finally {
+      // Desactivar estado de carga
+      setIsSubmitting(false);
+    }
   };
 
   return (
@@ -303,9 +332,22 @@ export default function ContactoPage() {
               <div>
                 <button
                   type="submit"
-                  className="w-full flex justify-center items-center px-6 py-2.5 border border-transparent rounded-lg text-base font-medium text-white bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-600 hover:to-teal-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-emerald-500 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 transition-all duration-200"
+                  disabled={isSubmitting}
+                  className={`w-full flex justify-center items-center px-6 py-2.5 border border-transparent rounded-lg text-base font-medium text-white bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-600 hover:to-teal-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-emerald-500 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 transition-all duration-200 ${
+                    isSubmitting ? 'opacity-75 cursor-not-allowed' : ''
+                  }`}
                 >
-                  Enviar mensaje
+                  {isSubmitting ? (
+                    <>
+                      <svg className="animate-spin -ml-1 mr-2 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                      </svg>
+                      Enviando...
+                    </>
+                  ) : (
+                    'Enviar mensaje'
+                  )}
                 </button>
               </div>
             </form>
