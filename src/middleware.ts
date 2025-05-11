@@ -15,6 +15,7 @@ const publicRoutes = [
   '/unauthorized',
   '/not-found',
   '/forbidden',
+  '/contacto',
 ];
 
 // Verifica si una ruta es pública

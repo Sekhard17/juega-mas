@@ -41,9 +41,8 @@ const Navbar = () => {
   const navLinks = [
     { name: 'INICIO', href: '/main/inicio' },
     { name: 'EXPLORAR', href: '/main/explorar' },
-    { name: 'ESPACIOS', href: '/main/espacios' },
     { name: 'CÓMO FUNCIONA', href: '/main/como-funciona' },
-    { name: 'CONTACTO', href: '/main/contacto' },
+    { name: 'CONTACTO', href: '/contacto' },
   ];
 
   // Renderizar botones de autenticación o el menú de usuario según el estado de la sesión
