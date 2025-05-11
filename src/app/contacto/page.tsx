@@ -65,25 +65,46 @@ export default function ContactoPage() {
 
     switch (name) {
       case 'nombre':
-        if (value.length < 3) error = 'El nombre debe tener al menos 3 caracteres';
+        if (!value.trim()) {
+          error = 'El nombre es obligatorio';
+        } else if (value.length < 3) {
+          error = 'El nombre debe tener al menos 3 caracteres';
+        }
         break;
       case 'email':
-        if (!validarEmail(value)) error = 'Por favor, ingresa un correo electrónico válido';
+        if (!value.trim()) {
+          error = 'El correo electrónico es obligatorio';
+        } else if (!validarEmail(value)) {
+          error = 'Por favor, ingresa un correo electrónico válido';
+        }
         break;
       case 'telefono':
-        if (value && !validarTelefono(value)) error = 'Por favor, ingresa un número de teléfono válido (+569XXXXXXXX)';
+        if (value && !validarTelefono(value)) {
+          error = 'Por favor, ingresa un número de teléfono válido (+569XXXXXXXX)';
+        }
         break;
       case 'asunto':
-        if (value.length < MIN_ASUNTO_LENGTH) error = `El asunto debe tener al menos ${MIN_ASUNTO_LENGTH} caracteres`;
-        if (value.length > MAX_ASUNTO_LENGTH) error = `El asunto no puede tener más de ${MAX_ASUNTO_LENGTH} caracteres`;
+        if (!value.trim()) {
+          error = 'El asunto es obligatorio';
+        } else if (value.length < MIN_ASUNTO_LENGTH) {
+          error = `El asunto debe tener al menos ${MIN_ASUNTO_LENGTH} caracteres`;
+        } else if (value.length > MAX_ASUNTO_LENGTH) {
+          error = `El asunto no puede tener más de ${MAX_ASUNTO_LENGTH} caracteres`;
+        }
         break;
       case 'mensaje':
-        if (value.length < MIN_MENSAJE_LENGTH) error = `El mensaje debe tener al menos ${MIN_MENSAJE_LENGTH} caracteres`;
-        if (value.length > MAX_MENSAJE_LENGTH) error = `El mensaje no puede tener más de ${MAX_MENSAJE_LENGTH} caracteres`;
+        if (!value.trim()) {
+          error = 'El mensaje es obligatorio';
+        } else if (value.length < MIN_MENSAJE_LENGTH) {
+          error = `El mensaje debe tener al menos ${MIN_MENSAJE_LENGTH} caracteres`;
+        } else if (value.length > MAX_MENSAJE_LENGTH) {
+          error = `El mensaje no puede tener más de ${MAX_MENSAJE_LENGTH} caracteres`;
+        }
         break;
     }
 
     setErrors(prev => ({ ...prev, [name]: error }));
+    return error === ''; // Retorna true si no hay error
   };
 
   // Manejar pérdida de foco
@@ -104,14 +125,17 @@ export default function ContactoPage() {
     }), {} as { [K in keyof typeof touched]: boolean });
     setTouched(allTouched);
 
-    // Validar todos los campos
+    // Validar todos los campos y verificar si hay errores
+    let isValid = true;
     Object.entries(formData).forEach(([key, value]) => {
-      validateField(key, value);
+      // Si algún campo no es válido, marcamos todo el formulario como inválido
+      if (!validateField(key, value)) {
+        isValid = false;
+      }
     });
 
-    // Verificar si hay errores
-    const hasErrors = Object.values(errors).some(error => error !== '');
-    if (hasErrors) {
+    // Si hay errores, mostrar mensaje y detener el envío
+    if (!isValid) {
       toast.error('Por favor, corrige los errores en el formulario');
       return;
     }
@@ -172,7 +196,6 @@ export default function ContactoPage() {
                         ? 'border-red-500 dark:border-red-400'
                         : 'border-gray-300 dark:border-gray-600'
                     } bg-white dark:bg-gray-700 px-4 py-2 text-gray-900 dark:text-white focus:border-emerald-500 focus:ring-emerald-500`}
-                    required
                   />
                   {touched.nombre && errors.nombre && (
                     <p className="mt-1 text-sm text-red-500 dark:text-red-400">{errors.nombre}</p>
@@ -184,7 +207,7 @@ export default function ContactoPage() {
                     Correo electrónico *
                   </label>
                   <input
-                    type="email"
+                    type="text"
                     id="email"
                     name="email"
                     value={formData.email}
@@ -195,7 +218,6 @@ export default function ContactoPage() {
                         ? 'border-red-500 dark:border-red-400'
                         : 'border-gray-300 dark:border-gray-600'
                     } bg-white dark:bg-gray-700 px-4 py-2 text-gray-900 dark:text-white focus:border-emerald-500 focus:ring-emerald-500`}
-                    required
                   />
                   {touched.email && errors.email && (
                     <p className="mt-1 text-sm text-red-500 dark:text-red-400">{errors.email}</p>
@@ -244,7 +266,6 @@ export default function ContactoPage() {
                         ? 'border-red-500 dark:border-red-400'
                         : 'border-gray-300 dark:border-gray-600'
                     } bg-white dark:bg-gray-700 px-4 py-2 text-gray-900 dark:text-white focus:border-emerald-500 focus:ring-emerald-500`}
-                    required
                   />
                   {touched.asunto && errors.asunto && (
                     <p className="mt-1 text-sm text-red-500 dark:text-red-400">{errors.asunto}</p>
@@ -270,7 +291,6 @@ export default function ContactoPage() {
                       ? 'border-red-500 dark:border-red-400'
                       : 'border-gray-300 dark:border-gray-600'
                   } bg-white dark:bg-gray-700 px-4 py-2 text-gray-900 dark:text-white focus:border-emerald-500 focus:ring-emerald-500 resize-none h-24`}
-                  required
                 />
                 {touched.mensaje && errors.mensaje && (
                   <p className="mt-1 text-sm text-red-500 dark:text-red-400">{errors.mensaje}</p>
