@@ -9,6 +9,19 @@ import ThemeToggle from '../../../components/ui/ThemeToggle';
 import { useAuth } from '@/providers/AuthProvider';
 import { toast } from 'sonner';
 
+// Lista de dominios de correo permitidos
+const DOMINIOS_PERMITIDOS = [
+  'gmail.com',
+  'hotmail.com',
+  'outlook.com',
+  'outlook.cl',
+  'yahoo.com',
+  'icloud.com',
+  'live.com',
+  'msn.com',
+  'me.com'
+];
+
 export default function RegisterPage() {
   const router = useRouter();
   const { theme } = useTheme();
@@ -28,15 +41,157 @@ export default function RegisterPage() {
   const [avatarPreview, setAvatarPreview] = useState<string | null>(null);
   const [avatarFile, setAvatarFile] = useState<File | null>(null);
   
+  // Estados para errores específicos de cada campo
+  const [emailError, setEmailError] = useState('');
+  const [passwordError, setPasswordError] = useState('');
+  const [confirmPasswordError, setConfirmPasswordError] = useState('');
+  const [nombreError, setNombreError] = useState('');
+  const [telefonoError, setTelefonoError] = useState('');
+  const [generalError, setGeneralError] = useState('');
+  
   // Estados para UI
   const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState('');
   const [step, setStep] = useState(1); // 1: datos básicos, 2: datos complementarios
   
-  // Manejar cambios en los inputs
+  // Validar correo electrónico
+  const validarEmail = (email: string): boolean => {
+    if (!email.trim()) {
+      setEmailError('El correo electrónico es obligatorio');
+      return false;
+    }
+    
+    // Expresión regular para verificar el formato básico del correo
+    const regexEmail = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!regexEmail.test(email)) {
+      setEmailError('Formato de correo electrónico inválido');
+      return false;
+    }
+    
+    // Obtener el dominio del correo
+    const dominio = email.split('@')[1].toLowerCase();
+    if (!DOMINIOS_PERMITIDOS.includes(dominio)) {
+      setEmailError('Correo electrónico no válido');
+      return false;
+    }
+    
+    // Limpiar error si todo está bien
+    setEmailError('');
+    return true;
+  };
+  
+  // Validar contraseña
+  const validarPassword = (password: string): boolean => {
+    if (!password.trim()) {
+      setPasswordError('La contraseña es obligatoria');
+      return false;
+    }
+    
+    if (password.length < 8) {
+      setPasswordError('La contraseña debe tener al menos 8 caracteres');
+      return false;
+    }
+    
+    // Limpiar error si todo está bien
+    setPasswordError('');
+    return true;
+  };
+  
+  // Validar confirmación de contraseña
+  const validarConfirmPassword = (confirmPassword: string): boolean => {
+    if (!confirmPassword.trim()) {
+      setConfirmPasswordError('Confirma tu contraseña');
+      return false;
+    }
+    
+    if (confirmPassword !== formData.password) {
+      setConfirmPasswordError('Las contraseñas no coinciden');
+      return false;
+    }
+    
+    // Limpiar error si todo está bien
+    setConfirmPasswordError('');
+    return true;
+  };
+  
+  // Validar nombre
+  const validarNombre = (nombre: string): boolean => {
+    if (!nombre.trim()) {
+      setNombreError('El nombre es obligatorio');
+      return false;
+    }
+    
+    if (nombre.trim().length < 3) {
+      setNombreError('El nombre debe tener al menos 3 caracteres');
+      return false;
+    }
+    
+    // Limpiar error si todo está bien
+    setNombreError('');
+    return true;
+  };
+  
+  // Validar teléfono (opcional)
+  const validarTelefono = (telefono: string): boolean => {
+    // Si está vacío, es válido porque es opcional
+    if (!telefono.trim()) {
+      setTelefonoError('');
+      return true;
+    }
+    
+    // Si tiene contenido, validamos formato
+    const regexTelefono = /^[+]?[(]?[0-9]{1,4}[)]?[-\s.]?[0-9]{3,4}[-\s.]?[0-9]{4,6}$/;
+    if (!regexTelefono.test(telefono)) {
+      setTelefonoError('Formato de teléfono inválido');
+      return false;
+    }
+    
+    // Limpiar error si todo está bien
+    setTelefonoError('');
+    return true;
+  };
+  
+  // Manejar cambios en los inputs con validación en tiempo real
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
     setFormData(prev => ({ ...prev, [name]: value }));
+    
+    // Solo validar campos vacíos mientras escribe
+    // La validación completa se hará al perder el foco
+    switch (name) {
+      case 'email':
+        if (!value.trim() && emailError) {
+          setEmailError('El correo electrónico es obligatorio');
+        } else if (value.trim() && emailError) {
+          setEmailError('');
+        }
+        break;
+      case 'password':
+        if (!value.trim() && passwordError) {
+          setPasswordError('La contraseña es obligatoria');
+        } else if (value.trim() && passwordError) {
+          setPasswordError('');
+        }
+        break;
+      case 'confirmPassword':
+        if (!value.trim() && confirmPasswordError) {
+          setConfirmPasswordError('Confirma tu contraseña');
+        } else if (value.trim() && confirmPasswordError) {
+          setConfirmPasswordError('');
+        }
+        break;
+      case 'nombre':
+        if (!value.trim() && nombreError) {
+          setNombreError('El nombre es obligatorio');
+        } else if (value.trim() && nombreError) {
+          setNombreError('');
+        }
+        break;
+      case 'telefono':
+        if (value.trim() && telefonoError) {
+          setTelefonoError('');
+        }
+        break;
+    }
   };
   
   // Manejar selección de avatar
@@ -45,13 +200,13 @@ export default function RegisterPage() {
       const file = e.target.files[0];
       // Verificar tamaño (5MB máximo)
       if (file.size > 5 * 1024 * 1024) {
-        setError('La imagen no debe superar los 5MB');
+        setGeneralError('La imagen no debe superar los 5MB');
         return;
       }
       
       // Verificar tipo
       if (!file.type.match('image.*')) {
-        setError('El archivo debe ser una imagen');
+        setGeneralError('El archivo debe ser una imagen');
         return;
       }
       
@@ -74,25 +229,16 @@ export default function RegisterPage() {
   
   // Validar paso 1
   const validateStep1 = () => {
-    // Validar email
-    if (!formData.email || !/\S+@\S+\.\S+/.test(formData.email)) {
-      setError('Por favor, introduce un email válido');
-      return false;
-    }
+    // Limpiar error general
+    setGeneralError('');
     
-    // Validar contraseña
-    if (formData.password.length < 8) {
-      setError('La contraseña debe tener al menos 8 caracteres');
-      return false;
-    }
+    // Validar todos los campos del paso 1
+    const esEmailValido = validarEmail(formData.email);
+    const esPasswordValida = validarPassword(formData.password);
+    const esConfirmPasswordValida = validarConfirmPassword(formData.confirmPassword);
     
-    // Validar confirmación de contraseña
-    if (formData.password !== formData.confirmPassword) {
-      setError('Las contraseñas no coinciden');
-      return false;
-    }
-    
-    return true;
+    // Si alguno no es válido, no continuar
+    return esEmailValido && esPasswordValida && esConfirmPasswordValida;
   };
   
   // Avanzar al siguiente paso
@@ -100,7 +246,6 @@ export default function RegisterPage() {
     e.preventDefault();
     
     if (validateStep1()) {
-      setError('');
       setStep(2);
     }
   };
@@ -108,22 +253,27 @@ export default function RegisterPage() {
   // Volver al paso anterior
   const handlePrevStep = () => {
     setStep(1);
-    setError('');
+    setGeneralError('');
   };
   
   // Manejar envío del formulario
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    // Validar nombre
-    if (!formData.nombre) {
-      setError('Por favor, introduce tu nombre');
+    // Limpiar error general
+    setGeneralError('');
+    
+    // Validar campos del paso 2
+    const esNombreValido = validarNombre(formData.nombre);
+    const esTelefonoValido = validarTelefono(formData.telefono);
+    
+    // Si alguno no es válido, no continuar
+    if (!esNombreValido || !esTelefonoValido) {
       return;
     }
     
     try {
       setIsLoading(true);
-      setError('');
       
       // Usar el AuthProvider para registrar al usuario
       const success = await register({
@@ -140,10 +290,10 @@ export default function RegisterPage() {
         toast.success('Registro exitoso');
         router.push('/auth/login?registered=true');
       } else {
-        setError('Error al registrar usuario. El correo electrónico podría ya estar en uso.');
+        setGeneralError('Error al registrar usuario. El correo electrónico podría ya estar en uso.');
       }
     } catch (err) {
-      setError('Error al registrar usuario. Por favor, intenta nuevamente.');
+      setGeneralError('Error al registrar usuario. Por favor, intenta nuevamente.');
       console.error(err);
     } finally {
       setIsLoading(false);
@@ -234,12 +384,12 @@ export default function RegisterPage() {
             {/* Formulario Paso 1: Datos básicos */}
             {step === 1 && (
               <form className="space-y-5" onSubmit={handleNextStep}>
-                {error && (
+                {generalError && (
                   <div className="bg-red-50 dark:bg-red-900/30 text-red-700 dark:text-red-400 p-3 rounded-xl text-sm flex items-start">
                     <svg className="h-5 w-5 flex-shrink-0 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
                     </svg>
-                    <span>{error}</span>
+                    <span>{generalError}</span>
                   </div>
                 )}
                 
@@ -256,15 +406,20 @@ export default function RegisterPage() {
                     <input
                       id="email"
                       name="email"
-                      type="email"
+                      type="text"
                       autoComplete="email"
-                      required
                       value={formData.email}
                       onChange={handleChange}
-                      className="appearance-none block w-full pl-10 pr-3 py-3 border border-gray-300 dark:border-gray-600 rounded-xl shadow-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 dark:bg-gray-700/80 dark:text-white text-sm transition-all duration-200"
+                      onBlur={() => validarEmail(formData.email)}
+                      className={`appearance-none block w-full pl-10 pr-3 py-3 border ${
+                        emailError ? 'border-red-500 dark:border-red-600' : 'border-gray-300 dark:border-gray-600'
+                      } rounded-xl shadow-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 dark:bg-gray-700/80 dark:text-white text-sm transition-all duration-200`}
                       placeholder="tu@email.com"
                     />
                   </div>
+                  {emailError && (
+                    <p className="mt-1 text-sm text-red-600 dark:text-red-400">{emailError}</p>
+                  )}
                 </div>
                 
                 <div className="group">
@@ -282,13 +437,18 @@ export default function RegisterPage() {
                       name="password"
                       type="password"
                       autoComplete="new-password"
-                      required
                       value={formData.password}
                       onChange={handleChange}
-                      className="appearance-none block w-full pl-10 pr-3 py-3 border border-gray-300 dark:border-gray-600 rounded-xl shadow-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 dark:bg-gray-700/80 dark:text-white text-sm transition-all duration-200"
-                      placeholder="Mínimo 8 caracteres"
+                      onBlur={() => validarPassword(formData.password)}
+                      className={`appearance-none block w-full pl-10 pr-3 py-3 border ${
+                        passwordError ? 'border-red-500 dark:border-red-600' : 'border-gray-300 dark:border-gray-600'
+                      } rounded-xl shadow-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 dark:bg-gray-700/80 dark:text-white text-sm transition-all duration-200`}
+                      placeholder="********"
                     />
                   </div>
+                  {passwordError && (
+                    <p className="mt-1 text-sm text-red-600 dark:text-red-400">{passwordError}</p>
+                  )}
                 </div>
                 
                 <div className="group">
@@ -298,7 +458,7 @@ export default function RegisterPage() {
                   <div className="relative group">
                     <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                       <svg className="h-5 w-5 text-gray-400 group-focus-within:text-emerald-500 dark:group-focus-within:text-emerald-400 transition-colors" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
                       </svg>
                     </div>
                     <input
@@ -306,13 +466,18 @@ export default function RegisterPage() {
                       name="confirmPassword"
                       type="password"
                       autoComplete="new-password"
-                      required
                       value={formData.confirmPassword}
                       onChange={handleChange}
-                      className="appearance-none block w-full pl-10 pr-3 py-3 border border-gray-300 dark:border-gray-600 rounded-xl shadow-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 dark:bg-gray-700/80 dark:text-white text-sm transition-all duration-200"
-                      placeholder="Repite tu contraseña"
+                      onBlur={() => validarConfirmPassword(formData.confirmPassword)}
+                      className={`appearance-none block w-full pl-10 pr-3 py-3 border ${
+                        confirmPasswordError ? 'border-red-500 dark:border-red-600' : 'border-gray-300 dark:border-gray-600'
+                      } rounded-xl shadow-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 dark:bg-gray-700/80 dark:text-white text-sm transition-all duration-200`}
+                      placeholder="********"
                     />
                   </div>
+                  {confirmPasswordError && (
+                    <p className="mt-1 text-sm text-red-600 dark:text-red-400">{confirmPasswordError}</p>
+                  )}
                 </div>
                 
                 <div className="pt-2">
@@ -329,67 +494,39 @@ export default function RegisterPage() {
             {/* Formulario Paso 2: Datos de perfil */}
             {step === 2 && (
               <form className="space-y-5" onSubmit={handleSubmit}>
-                {error && (
+                {generalError && (
                   <div className="bg-red-50 dark:bg-red-900/30 text-red-700 dark:text-red-400 p-3 rounded-xl text-sm flex items-start">
                     <svg className="h-5 w-5 flex-shrink-0 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
                     </svg>
-                    <span>{error}</span>
+                    <span>{generalError}</span>
                   </div>
                 )}
                 
                 {/* Avatar */}
-                <div className="mb-5 flex flex-col items-center">
-                  <label htmlFor="avatar" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">
-                    Foto de perfil (opcional)
-                  </label>
-                  <div 
+                <div className="flex flex-col items-center space-y-3">
+                  <div
                     onClick={handleAvatarClick}
-                    className="relative w-28 h-28 rounded-full border-2 border-gray-300 dark:border-gray-600 border-dashed flex items-center justify-center cursor-pointer hover:border-emerald-500 dark:hover:border-emerald-400 transition-colors overflow-hidden group shadow-lg"
+                    className="w-24 h-24 rounded-full border-2 border-dashed border-gray-300 dark:border-gray-600 flex items-center justify-center hover:border-emerald-500 dark:hover:border-emerald-400 cursor-pointer overflow-hidden transition-colors"
                   >
                     {avatarPreview ? (
-                      <Image 
-                        src={avatarPreview} 
-                        alt="Vista previa"
-                        fill
-                        style={{ objectFit: 'cover' }}
-                        className="rounded-full"
-                      />
+                      <img src={avatarPreview} alt="Avatar Preview" className="w-full h-full object-cover" />
                     ) : (
-                      <>
-                        <div className="absolute inset-0 bg-gradient-to-br from-emerald-100 to-teal-100 dark:from-emerald-900/30 dark:to-teal-900/30 opacity-50 group-hover:opacity-70 transition-opacity"></div>
-                        <svg className="h-10 w-10 text-emerald-500 dark:text-emerald-400 group-hover:scale-110 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
-                        </svg>
-                        <div className="absolute -bottom-10 group-hover:bottom-0 left-0 right-0 bg-emerald-500 text-white text-xs py-1.5 text-center transition-all duration-300">
-                          Subir foto
-                        </div>
-                      </>
+                      <svg className="h-10 w-10 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                      </svg>
                     )}
                   </div>
-                  <input 
-                    type="file" 
-                    id="avatar" 
+                  <input
+                    type="file"
                     ref={fileInputRef}
+                    className="hidden"
                     accept="image/*"
                     onChange={handleAvatarChange}
-                    className="hidden"
                   />
-                  {avatarPreview && (
-                    <button
-                      type="button"
-                      onClick={() => {
-                        setAvatarPreview(null);
-                        setAvatarFile(null);
-                      }}
-                      className="mt-2 text-xs text-red-500 hover:text-red-700 dark:text-red-400 dark:hover:text-red-300 flex items-center"
-                    >
-                      <svg className="h-3 w-3 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                      </svg>
-                      Eliminar foto
-                    </button>
-                  )}
+                  <p className="text-xs text-gray-500 dark:text-gray-400 text-center">
+                    Haz clic para añadir una foto de perfil (opcional)
+                  </p>
                 </div>
                 
                 <div className="group">
@@ -407,18 +544,24 @@ export default function RegisterPage() {
                       name="nombre"
                       type="text"
                       autoComplete="name"
-                      required
                       value={formData.nombre}
                       onChange={handleChange}
-                      className="appearance-none block w-full pl-10 pr-3 py-3 border border-gray-300 dark:border-gray-600 rounded-xl shadow-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 dark:bg-gray-700/80 dark:text-white text-sm transition-all duration-200"
-                      placeholder="Tu nombre y apellido"
+                      onBlur={() => validarNombre(formData.nombre)}
+                      className={`appearance-none block w-full pl-10 pr-3 py-3 border ${
+                        nombreError ? 'border-red-500 dark:border-red-600' : 'border-gray-300 dark:border-gray-600'
+                      } rounded-xl shadow-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 dark:bg-gray-700/80 dark:text-white text-sm transition-all duration-200`}
+                      placeholder="Tu nombre completo"
                     />
                   </div>
+                  {nombreError && (
+                    <p className="mt-1 text-sm text-red-600 dark:text-red-400">{nombreError}</p>
+                  )}
                 </div>
                 
                 <div className="group">
-                  <label htmlFor="telefono" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1 group-focus-within:text-emerald-500 dark:group-focus-within:text-emerald-400 transition-colors">
-                    Teléfono (opcional)
+                  <label htmlFor="telefono" className="flex items-center text-sm font-medium text-gray-700 dark:text-gray-300 mb-1 group-focus-within:text-emerald-500 dark:group-focus-within:text-emerald-400 transition-colors">
+                    Teléfono
+                    <span className="ml-1 text-xs text-gray-500 dark:text-gray-400">(opcional)</span>
                   </label>
                   <div className="relative group">
                     <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
@@ -433,23 +576,27 @@ export default function RegisterPage() {
                       autoComplete="tel"
                       value={formData.telefono}
                       onChange={handleChange}
-                      className="appearance-none block w-full pl-10 pr-3 py-3 border border-gray-300 dark:border-gray-600 rounded-xl shadow-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 dark:bg-gray-700/80 dark:text-white text-sm transition-all duration-200"
-                      placeholder="+34 600 123 456"
+                      onBlur={() => validarTelefono(formData.telefono)}
+                      className={`appearance-none block w-full pl-10 pr-3 py-3 border ${
+                        telefonoError ? 'border-red-500 dark:border-red-600' : 'border-gray-300 dark:border-gray-600'
+                      } rounded-xl shadow-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 dark:bg-gray-700/80 dark:text-white text-sm transition-all duration-200`}
+                      placeholder="+56 9 1234 5678"
                     />
                   </div>
+                  {telefonoError && (
+                    <p className="mt-1 text-sm text-red-600 dark:text-red-400">{telefonoError}</p>
+                  )}
                 </div>
                 
-                <div className="flex justify-between gap-4 pt-2">
+                <div className="flex space-x-4 pt-2">
                   <button
                     type="button"
                     onClick={handlePrevStep}
-                    className="w-1/3 flex justify-center items-center py-3 px-4 border border-gray-300 dark:border-gray-600 rounded-xl shadow-sm text-sm font-medium text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-emerald-500 transition-all duration-300"
+                    className="w-1/3 flex justify-center items-center py-3 px-4 border border-gray-300 dark:border-gray-600 rounded-xl shadow-md text-sm font-medium text-gray-700 dark:text-gray-200 bg-white dark:bg-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-emerald-500 transition-all duration-300"
                   >
-                    <svg className="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
-                    </svg>
                     Atrás
                   </button>
+                  
                   <button
                     type="submit"
                     disabled={isLoading}
@@ -466,36 +613,23 @@ export default function RegisterPage() {
                         Registrando...
                       </>
                     ) : (
-                      'Completar registro'
+                      'Crear cuenta'
                     )}
                   </button>
                 </div>
               </form>
             )}
             
-            {/* Términos y condiciones */}
-            <p className="mt-6 text-xs text-center text-gray-600 dark:text-gray-400">
-              Al registrarte, aceptas nuestros{' '}
-              <Link href="/terminos" className="text-emerald-600 hover:text-emerald-500 dark:text-emerald-400 dark:hover:text-emerald-300">
-                Términos y condiciones
-              </Link>{' '}
-              y nuestra{' '}
-              <Link href="/privacidad" className="text-emerald-600 hover:text-emerald-500 dark:text-emerald-400 dark:hover:text-emerald-300">
-                Política de privacidad
-              </Link>
-            </p>
+            {/* Pie del formulario */}
+            <div className="mt-8 text-center">
+              <p className="text-sm text-gray-600 dark:text-gray-400">
+                ¿Ya tienes una cuenta?{' '}
+                <Link href="/auth/login" className="font-medium text-emerald-600 hover:text-emerald-500 dark:text-emerald-400 dark:hover:text-emerald-300 transition-colors">
+                  Inicia sesión
+                </Link>
+              </p>
+            </div>
             
-            {/* Enlace a login - movido del encabezado al pie de página */}
-            {step === 1 && (
-              <div className="mt-4 text-center">
-                <p className="text-sm text-gray-600 dark:text-gray-400">
-                  ¿Ya tienes cuenta?{' '}
-                  <Link href="/auth/login" className="font-medium text-emerald-600 hover:text-emerald-500 dark:text-emerald-400 dark:hover:text-emerald-300 transition-colors duration-200">
-                    Inicia sesión
-                  </Link>
-                </p>
-              </div>
-            )}
           </div>
         </div>
       </div>

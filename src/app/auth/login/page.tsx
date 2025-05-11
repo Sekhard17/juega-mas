@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, Suspense } from 'react';
+import { useState, Suspense, useEffect } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import Image from 'next/image';
 import Link from 'next/link';
@@ -8,6 +8,19 @@ import { useTheme } from '../../../components/shared/ThemeProvider';
 import ThemeToggle from '../../../components/ui/ThemeToggle';
 import { useAuth } from '@/providers/AuthProvider';
 import { toast } from 'sonner';
+
+// Lista de dominios de correo permitidos
+const DOMINIOS_PERMITIDOS = [
+  'gmail.com',
+  'hotmail.com',
+  'outlook.com',
+  'outlook.cl',
+  'yahoo.com',
+  'icloud.com',
+  'live.com',
+  'msn.com',
+  'me.com'
+];
 
 // Componente que usa useSearchParams
 function LoginForm() {
@@ -21,27 +34,100 @@ function LoginForm() {
   const [password, setPassword] = useState('');
   const [rememberMe, setRememberMe] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState('');
+  
+  // Estados para errores específicos de cada campo
+  const [emailError, setEmailError] = useState('');
+  const [passwordError, setPasswordError] = useState('');
+  const [generalError, setGeneralError] = useState('');
   
   // Mostrar mensaje si viene de registro
-  useState(() => {
+  useEffect(() => {
     if (searchParams.get('registered')) {
       toast.success('¡Registro exitoso! Ahora puedes iniciar sesión');
     }
-  });
+  }, [searchParams]);
+  
+  // Validar correo electrónico
+  const validarEmail = (email: string): boolean => {
+    if (!email.trim()) {
+      setEmailError('El correo electrónico es obligatorio');
+      return false;
+    }
+    
+    // Expresión regular para verificar el formato básico del correo
+    const regexEmail = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!regexEmail.test(email)) {
+      setEmailError('Formato de correo electrónico inválido');
+      return false;
+    }
+    
+    // Obtener el dominio del correo
+    const dominio = email.split('@')[1].toLowerCase();
+    if (!DOMINIOS_PERMITIDOS.includes(dominio)) {
+      setEmailError('Correo electrónico no válido');
+      return false;
+    }
+    
+    // Limpiar error si todo está bien
+    setEmailError('');
+    return true;
+  };
+  
+  // Validar contraseña
+  const validarPassword = (password: string): boolean => {
+    if (!password.trim()) {
+      setPasswordError('La contraseña es obligatoria');
+      return false;
+    }
+    
+    // Limpiar error si todo está bien
+    setPasswordError('');
+    return true;
+  };
+  
+  // Manejar cambio de email con validación en tiempo real
+  const handleEmailChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const nuevoEmail = e.target.value;
+    setEmail(nuevoEmail);
+    
+    // Solo validamos campos vacíos mientras escribe
+    // La validación completa se hará al perder el foco
+    if (!nuevoEmail.trim() && emailError) {
+      setEmailError('El correo electrónico es obligatorio');
+    } else if (nuevoEmail.trim() && emailError) {
+      // Si antes había error y ahora hay contenido, quitamos el mensaje
+      setEmailError('');
+    }
+  };
+  
+  // Manejar cambio de contraseña con validación en tiempo real
+  const handlePasswordChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const nuevaPassword = e.target.value;
+    setPassword(nuevaPassword);
+    
+    // Solo validamos si el campo ya no está vacío o si ya tenía un error
+    if (nuevaPassword.trim() || passwordError) {
+      validarPassword(nuevaPassword);
+    }
+  };
   
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    // Validación básica
-    if (!email || !password) {
-      setError('Por favor completa todos los campos');
+    // Limpiar error general
+    setGeneralError('');
+    
+    // Validar todos los campos
+    const esEmailValido = validarEmail(email);
+    const esPasswordValida = validarPassword(password);
+    
+    // Si hay errores, no continuar
+    if (!esEmailValido || !esPasswordValida) {
       return;
     }
     
     try {
       setIsLoading(true);
-      setError('');
       
       // Usar la función login del AuthProvider
       const success = await login(email, password);
@@ -55,10 +141,10 @@ function LoginForm() {
           router.push(redirect);
         }, 300);
       } else {
-        setError('Email o contraseña incorrectos');
+        setGeneralError('Email o contraseña incorrectos');
       }
     } catch (err) {
-      setError('Error al iniciar sesión. Por favor, intenta nuevamente.');
+      setGeneralError('Error al iniciar sesión. Por favor, intenta nuevamente.');
       console.error(err);
     } finally {
       setIsLoading(false);
@@ -67,12 +153,12 @@ function LoginForm() {
   
   return (
     <form className="space-y-5" onSubmit={handleSubmit}>
-      {error && (
+      {generalError && (
         <div className="bg-red-50 dark:bg-red-900/30 text-red-700 dark:text-red-400 p-3 rounded-xl text-sm flex items-start">
           <svg className="h-5 w-5 flex-shrink-0 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
           </svg>
-          <span>{error}</span>
+          <span>{generalError}</span>
         </div>
       )}
       
@@ -89,15 +175,20 @@ function LoginForm() {
           <input
             id="email"
             name="email"
-            type="email"
+            type="text" // Cambiado de email a text para evitar validación nativa
             autoComplete="email"
-            required
             value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            className="appearance-none block w-full pl-10 pr-3 py-3 border border-gray-300 dark:border-gray-600 rounded-xl shadow-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 dark:bg-gray-700/80 dark:text-white text-sm transition-all duration-200"
+            onChange={handleEmailChange}
+            onBlur={() => validarEmail(email)} // Validar al perder foco
+            className={`appearance-none block w-full pl-10 pr-3 py-3 border ${
+              emailError ? 'border-red-500 dark:border-red-600' : 'border-gray-300 dark:border-gray-600'
+            } rounded-xl shadow-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 dark:bg-gray-700/80 dark:text-white text-sm transition-all duration-200`}
             placeholder="tu@email.com"
           />
         </div>
+        {emailError && (
+          <p className="mt-1 text-sm text-red-600 dark:text-red-400">{emailError}</p>
+        )}
       </div>
 
       <div className="group">
@@ -115,13 +206,18 @@ function LoginForm() {
             name="password"
             type="password"
             autoComplete="current-password"
-            required
             value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            className="appearance-none block w-full pl-10 pr-3 py-3 border border-gray-300 dark:border-gray-600 rounded-xl shadow-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 dark:bg-gray-700/80 dark:text-white text-sm transition-all duration-200"
+            onChange={handlePasswordChange}
+            onBlur={() => validarPassword(password)} // Validar al perder foco
+            className={`appearance-none block w-full pl-10 pr-3 py-3 border ${
+              passwordError ? 'border-red-500 dark:border-red-600' : 'border-gray-300 dark:border-gray-600'
+            } rounded-xl shadow-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 dark:bg-gray-700/80 dark:text-white text-sm transition-all duration-200`}
             placeholder="********"
           />
         </div>
+        {passwordError && (
+          <p className="mt-1 text-sm text-red-600 dark:text-red-400">{passwordError}</p>
+        )}
       </div>
 
       <div className="flex items-center justify-between">

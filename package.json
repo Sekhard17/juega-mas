@@ -12,6 +12,7 @@
     "lint": "next lint"
   },
   "dependencies": {
+    "@gsap/react": "^2.1.2",
     "@heroicons/react": "^2.2.0",
     "@next/font": "^14.2.15",
     "@supabase/supabase-js": "2.49.4",
@@ -19,6 +20,7 @@
     "bcryptjs": "3.0.2",
     "cookies-next": "5.1.0",
     "framer-motion": "^12.10.4",
+    "gsap": "^3.13.0",
     "jose": "^6.0.10",
     "jsonwebtoken": "9.0.2",
     "next": "15.3.1",
