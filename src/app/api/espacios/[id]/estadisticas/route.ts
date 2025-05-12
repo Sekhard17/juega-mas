@@ -3,11 +3,10 @@ import { EstadisticasController } from '@/controllers/estadisticasController';
 
 export async function GET(
   request: Request,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
+  const { id } = await params;
   try {
-    // Obtenemos el ID directamente del objeto params
-    const { id } = params;
     const espacioId = parseInt(id);
     
     if (isNaN(espacioId)) {
@@ -17,7 +16,6 @@ export async function GET(
       );
     }
     
-    // Obtenemos las estadísticas del espacio
     const estadisticas = await EstadisticasController.obtenerEstadisticasEspacio(espacioId);
     
     if (!estadisticas) {
@@ -27,7 +25,6 @@ export async function GET(
       );
     }
     
-    // Devolvemos las estadísticas
     return NextResponse.json(estadisticas);
   } catch (error) {
     console.error('Error en la API de estadísticas:', error);
