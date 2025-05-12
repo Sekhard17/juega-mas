@@ -39,20 +39,18 @@ export default function Home() {
           {/* Buscador al estilo Airbnb */}
           <SearchBar />
           
-
-          
           {/* Botones de acción */}
-          <div className="mt-8 flex flex-col sm:flex-row gap-4 justify-center">
+          {/* <div className="mt-8 flex flex-col sm:flex-row gap-4 justify-center">
             <Link href="/como-funciona" className="px-8 py-4 bg-transparent border-2 border-white text-white font-bold rounded-lg hover:bg-white/10 transition-all duration-300 text-center transform hover:-translate-y-1 uppercase tracking-wider">
               Cómo funciona
             </Link>
             <Link href="/propietarios" className="px-8 py-4 bg-white text-emerald-600 font-bold rounded-lg shadow-lg hover:shadow-xl hover:bg-gray-50 transition-all duration-300 text-center transform hover:-translate-y-1 uppercase tracking-wider">
               Soy propietario
             </Link>
-          </div>
+          </div> */}
           
           {/* Estadísticas */}
-          <div className="mt-16 grid grid-cols-2 md:grid-cols-4 gap-6 text-center">
+          {/* <div className="mt-16 grid grid-cols-2 md:grid-cols-4 gap-6 text-center">
             <div className="bg-white/10 backdrop-blur-sm rounded-lg p-4 shadow-lg">
               <p className="text-3xl font-bold text-white">500+</p>
               <p className="text-sm text-emerald-100 mt-1 uppercase tracking-wider">Espacios disponibles</p>
@@ -69,7 +67,7 @@ export default function Home() {
               <p className="text-3xl font-bold text-white">4.8</p>
               <p className="text-sm text-emerald-100 mt-1 uppercase tracking-wider">Calificación promedio</p>
             </div>
-          </div>
+          </div> */}
         </div>
       </section>
 
@@ -386,8 +384,8 @@ export default function Home() {
                 {/* Imagen principal */}
                 <div className="relative mx-auto w-full max-w-md rounded-2xl shadow-2xl overflow-hidden border-4 border-white transform rotate-3">
                   <Image
-                    src="/images/propietario.jpg"
-                    alt="Propietario de espacio deportivo"
+                    src="/cancha.png"
+                    alt="Espacio deportivo"
                     width={600}
                     height={400}
                     className="w-full h-auto object-cover"

@@ -16,11 +16,36 @@ export const userModel = {
    */
   async updateProfile(userId: number, data: UpdateProfileData): Promise<User | null> {
     try {
+      // Asegurarse de que el nombre no pueda ser modificado
+      if (data.nombre) {
+        delete data.nombre;
+      }
+      
+      // Crear un objeto con solo los campos con valor
+      const updateData: Record<string, any> = {};
+      
+      // Solo incluir campos que tengan un valor definido
+      if (data.telefono !== undefined) updateData.telefono = data.telefono;
+      
+      // Verificar si hay campos para actualizar
+      if (Object.keys(updateData).length === 0) {
+        // Si no hay campos para actualizar, solo devolver el usuario actual
+        const { data: currentUser, error: fetchError } = await supabase
+          .from('usuarios')
+          .select('id, email, nombre, telefono, foto_perfil, role, created_at, updated_at')
+          .eq('id', userId)
+          .single();
+          
+        if (fetchError) throw fetchError;
+        return currentUser as User;
+      }
+      
+      // Actualizar solo los campos necesarios
       const { data: updatedUser, error } = await supabase
         .from('usuarios')
-        .update(data)
+        .update(updateData)
         .eq('id', userId)
-        .select('id, email, nombre, telefono, foto_perfil, biografia, notificaciones_email, notificaciones_app, role, created_at, updated_at')
+        .select('id, email, nombre, telefono, foto_perfil, role, created_at, updated_at')
         .single();
       
       if (error) throw error;
@@ -38,22 +63,21 @@ export const userModel = {
   async updateProfilePhoto(userId: number, photoFile: File): Promise<string | null> {
     try {
       const fileExt = photoFile.name.split('.').pop();
-      const fileName = `${userId}-${Date.now()}.${fileExt}`;
-      const filePath = `profile-photos/${fileName}`;
+      const fileName = `avatar-${userId}-${Date.now()}.${fileExt}`;
       
       // Subir archivo a Supabase Storage
       const { error: uploadError } = await supabase
         .storage
-        .from('user-content')
-        .upload(filePath, photoFile);
+        .from('avatares')
+        .upload(fileName, photoFile);
       
       if (uploadError) throw uploadError;
       
       // Obtener URL pública del archivo
       const { data: { publicUrl } } = supabase
         .storage
-        .from('user-content')
-        .getPublicUrl(filePath);
+        .from('avatares')
+        .getPublicUrl(fileName);
       
       // Actualizar el perfil del usuario con la nueva URL de foto
       const { error: updateError } = await supabase

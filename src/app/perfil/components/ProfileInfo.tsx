@@ -13,9 +13,7 @@ interface ProfileInfoProps {
 }
 
 export default function ProfileInfo({ user, onProfileUpdated }: ProfileInfoProps) {
-  const [nombre, setNombre] = useState(user.nombre || '');
   const [telefono, setTelefono] = useState(user.telefono || '');
-  const [biografia, setBiografia] = useState(user.biografia || '');
   const [profilePhotoFile, setProfilePhotoFile] = useState<File | null>(null);
   const [isLoading, setIsLoading] = useState(false);
 
@@ -29,21 +27,27 @@ export default function ProfileInfo({ user, onProfileUpdated }: ProfileInfoProps
         const photoResult = await userController.updateProfilePhoto(user.id, profilePhotoFile);
         if (!photoResult.success) {
           toast.error(photoResult.error || 'Error al actualizar la foto de perfil');
+          setIsLoading(false);
+          return;
         }
       }
 
-      // Actualizar datos de perfil
-      const result = await userController.updateProfile(user.id, {
-        nombre,
-        telefono,
-        biografia
-      });
+      // Solo actualizar los datos del perfil si ha cambiado el teléfono
+      if (telefono !== user.telefono) {
+        const result = await userController.updateProfile(user.id, {
+          telefono
+        });
 
-      if (result.success) {
-        onProfileUpdated();
-      } else {
-        toast.error(result.error || 'Error al actualizar el perfil');
+        if (!result.success) {
+          toast.error(result.error || 'Error al actualizar el perfil');
+          setIsLoading(false);
+          return;
+        }
       }
+
+      // Si llegamos aquí, todo fue bien
+      onProfileUpdated();
+      toast.success('Perfil actualizado correctamente');
     } catch (error) {
       console.error('Error al actualizar perfil:', error);
       toast.error('Ocurrió un error inesperado');
@@ -112,13 +116,14 @@ export default function ProfileInfo({ user, onProfileUpdated }: ProfileInfoProps
                   <input
                     type="text"
                     id="nombre"
-                    value={nombre}
-                    onChange={(e) => setNombre(e.target.value)}
-                    className="block w-full h-11 rounded-lg border border-gray-300 dark:border-gray-600 shadow-sm focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20 dark:bg-gray-700 dark:text-white text-sm pl-10 pr-3 py-2.5 transition-all duration-200"
-                    placeholder="Tu nombre completo"
-                    required
+                    value={user.nombre}
+                    readOnly
+                    className="block w-full h-11 rounded-lg border border-gray-300 dark:border-gray-600 bg-gray-100 dark:bg-gray-600 shadow-sm focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20 dark:text-white text-sm cursor-not-allowed pl-10 pr-3 py-2.5 transition-all duration-200"
                   />
                 </div>
+                <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
+                  El nombre no se puede cambiar.
+                </p>
               </div>
 
               <div>
@@ -163,26 +168,6 @@ export default function ProfileInfo({ user, onProfileUpdated }: ProfileInfoProps
                 </div>
                 <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
                   El correo electrónico no se puede cambiar.
-                </p>
-              </div>
-
-              <div className="sm:col-span-2">
-                <label htmlFor="biografia" className="block text-sm font-medium text-gray-700 dark:text-white mb-1.5">
-                  Biografía
-                </label>
-                <textarea
-                  id="biografia"
-                  value={biografia}
-                  onChange={(e) => setBiografia(e.target.value)}
-                  rows={3}
-                  className="block w-full rounded-lg border border-gray-300 dark:border-gray-600 shadow-sm focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20 dark:bg-gray-700 dark:text-white text-sm p-3 transition-all duration-200"
-                  placeholder="Cuéntanos algo sobre ti..."
-                />
-                <p className="mt-1 flex items-center text-xs text-gray-500 dark:text-gray-400">
-                  <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 mr-1 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                  </svg>
-                  Esta información será visible en tu perfil público.
                 </p>
               </div>
             </div>

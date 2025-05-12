@@ -2,64 +2,157 @@
 
 import React, { useEffect, useState } from 'react';
 import { useAuth } from '@/providers/AuthProvider';
-import DashboardContainer from '@/components/dashboard/DashboardContainer';
+import { API_ROUTES } from '@/lib/apiConfig';
+import { espaciosModel } from '@/models/espaciosModel';
+import { EspacioDeportivo, FiltrosEspacios } from '@/types/espacio';
+import { toast } from 'sonner';
+import { ViewMode, saveViewMode, getViewMode } from '@/lib/viewPreference';
+import EspaciosHeader from '@/components/dashboard/propietario/EspaciosHeader';
+import EspaciosTable from '@/components/dashboard/propietario/EspaciosTable';
+import EspaciosCards from '@/components/dashboard/propietario/EspaciosCards';
 
 export default function EspaciosPropietarioPage() {
   const { user } = useAuth();
   const [loading, setLoading] = useState(true);
-  const [espacios, setEspacios] = useState([]);
+  const [espacios, setEspacios] = useState<EspacioDeportivo[]>([]);
+  const [viewMode, setViewMode] = useState<ViewMode>('cards');
+  const [filtros, setFiltros] = useState<FiltrosEspacios>({});
 
+  // Cargar preferencia de vista al iniciar
   useEffect(() => {
-    if (user) {
-      // Aquí iría la lógica para cargar los espacios del propietario
-      // Por ahora solo simulamos una carga
-      setTimeout(() => {
+    setViewMode(getViewMode());
+  }, []);
+
+  // Guardar preferencia cuando cambia
+  const handleViewModeChange = (mode: ViewMode) => {
+    setViewMode(mode);
+    saveViewMode(mode);
+  };
+
+  // Cargar espacios deportivos
+  useEffect(() => {
+    const cargarEspacios = async () => {
+      if (!user?.id) return;
+      
+      try {
+        setLoading(true);
+        
+        // Usar el modelo para obtener los espacios filtrados
+        const resultado = await espaciosModel.listarEspacios(filtros);
+        
+        // Filtrar solo los espacios del propietario actual
+        const espaciosPropietario = resultado.espacios.filter(
+          (espacio) => espacio.propietario_id === user.id
+        );
+        
+        setEspacios(espaciosPropietario);
+      } catch (error) {
+        console.error('Error:', error);
+        toast.error('No se pudieron cargar tus espacios deportivos');
+      } finally {
         setLoading(false);
-        // Datos de ejemplo
-        setEspacios([]);
-      }, 1000);
+      }
+    };
+
+    cargarEspacios();
+  }, [user?.id, filtros]);
+
+  // Manejar búsqueda
+  const handleSearch = (query: string) => {
+    setFiltros((prev) => ({
+      ...prev,
+      busqueda: query
+    }));
+  };
+
+  // Manejar cambios en filtros
+  const handleFilterChange = (nuevosFiltros: Partial<FiltrosEspacios>) => {
+    setFiltros((prev) => ({
+      ...prev,
+      ...nuevosFiltros
+    }));
+  };
+
+  // Manejar eliminación de espacio
+  const handleDelete = async (id: number) => {
+    try {
+      const response = await fetch(`${API_ROUTES.ESPACIOS.DELETE}/${id}`, {
+        method: 'DELETE',
+      });
+
+      if (!response.ok) {
+        throw new Error('Error al eliminar el espacio');
+      }
+
+      // Eliminar el espacio de la lista
+      setEspacios((prev) => prev.filter((espacio) => espacio.id !== id));
+      toast.success('Espacio eliminado correctamente');
+    } catch (error) {
+      console.error('Error:', error);
+      toast.error('No se pudo eliminar el espacio');
+      throw error; // Re-lanzar para que el componente maneje el estado del botón
     }
-  }, [user]);
+  };
+
+  // Manejar cambio de estado (activar/desactivar)
+  const handleToggleEstado = async (id: number, nuevoEstado: 'activo' | 'inactivo') => {
+    try {
+      const response = await fetch(`${API_ROUTES.ESPACIOS.UPDATE}/${id}`, {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ estado_espacio: nuevoEstado }),
+      });
+
+      if (!response.ok) {
+        throw new Error(`Error al cambiar el estado del espacio: ${response.statusText}`);
+      }
+
+      // Actualizar el estado en la lista
+      setEspacios((prev) => 
+        prev.map((espacio) => 
+          espacio.id === id 
+            ? { ...espacio, estado_espacio: nuevoEstado } 
+            : espacio
+        )
+      );
+      
+      toast.success(`Espacio ${nuevoEstado === 'activo' ? 'activado' : 'desactivado'} correctamente`);
+    } catch (error) {
+      console.error('Error:', error);
+      toast.error('No se pudo cambiar el estado del espacio');
+      throw error; // Re-lanzar para que el componente maneje el estado del botón
+    }
+  };
 
   return (
-    <DashboardContainer
-      title="Mis Espacios Deportivos"
-      description="Administra tus espacios deportivos y canchas"
-      actions={
-        <button className="px-4 py-2 bg-gradient-to-r from-emerald-500 to-teal-600 text-white font-medium rounded-lg hover:from-emerald-600 hover:to-teal-700 transition-all duration-200 shadow-sm">
-          Crear Nuevo Espacio
-        </button>
-      }
-    >
-      {loading ? (
-        <div className="flex justify-center items-center h-64">
-          <div className="h-8 w-8 border-4 border-emerald-500 border-t-transparent rounded-full animate-spin"></div>
-        </div>
-      ) : espacios.length > 0 ? (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {/* Aquí se mostrarían los espacios del propietario */}
-          <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
-            <p className="text-center text-gray-600 dark:text-gray-400">
-              Contenido del espacio
-            </p>
-          </div>
-        </div>
+    <div className="px-2 py-2 md:px-4 md:py-3 max-w-full">
+      {/* Cabecera con filtros y selector de vista */}
+      <EspaciosHeader 
+        viewMode={viewMode}
+        onViewModeChange={handleViewModeChange}
+        onSearch={handleSearch}
+        onFilterChange={handleFilterChange}
+        filtrosActuales={filtros}
+      />
+      
+      {/* Mostrar espacios según el modo de vista */}
+      {viewMode === 'table' ? (
+        <EspaciosTable 
+          espacios={espacios} 
+          onDelete={handleDelete}
+          onToggleEstado={handleToggleEstado}
+          isLoading={loading}
+        />
       ) : (
-        <div className="text-center py-12 px-4">
-          <svg className="mx-auto h-16 w-16 text-gray-400 dark:text-gray-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
-          </svg>
-          <h3 className="mt-4 text-lg font-medium text-gray-700 dark:text-gray-300">No tienes espacios deportivos</h3>
-          <p className="mt-2 text-gray-600 dark:text-gray-400 max-w-md mx-auto">
-            Comienza a añadir tus espacios deportivos para que los usuarios puedan reservarlos.
-          </p>
-          <div className="mt-6">
-            <button className="px-4 py-2 bg-gradient-to-r from-emerald-500 to-teal-600 text-white font-medium rounded-lg hover:from-emerald-600 hover:to-teal-700 transition-all duration-200 shadow-sm">
-              Crear mi primer espacio
-            </button>
-          </div>
-        </div>
+        <EspaciosCards 
+          espacios={espacios} 
+          onDelete={handleDelete}
+          onToggleEstado={handleToggleEstado}
+          isLoading={loading}
+        />
       )}
-    </DashboardContainer>
+    </div>
   );
 } 

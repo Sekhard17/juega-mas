@@ -1,5 +1,55 @@
 import supabase from '@/lib/supabaseClient';
-import { EspacioDeportivo, FiltrosEspacios, PaginacionEspacios } from '@/types/espacio';
+import { EspacioDeportivo, FiltrosEspacios, PaginacionEspacios, Caracteristica, ImagenEspacio, HorarioDisponibilidad } from '@/types/espacio';
+
+// Tipos predefinidos de espacios deportivos
+const TIPOS_ESPACIOS_PREDEFINIDOS = [
+  'Fútbol 5',
+  'Fútbol 7',
+  'Fútbol 11',
+  'Básquetbol',
+  'Vóley',
+  'Tenis',
+  'Pádel',
+  'Gimnasio',
+  'Natación',
+  'Crossfit',
+  'Sala multideporte',
+  'Hockey',
+  'Rugby',
+  'Otro'
+];
+
+// Características predefinidas para espacios deportivos
+const CARACTERISTICAS_PREDEFINIDAS = [
+  'Estacionamiento',
+  'Vestuarios',
+  'Duchas',
+  'Iluminación',
+  'Baños',
+  'Cafetería',
+  'Wifi',
+  'Gradas para espectadores',
+  'Acceso para discapacitados',
+  'Césped natural',
+  'Césped sintético',
+  'Superficie de madera',
+  'Superficie de cemento',
+  'Superficie de arcilla',
+  'Techo cubierto',
+  'Canchas techadas',
+  'Aire acondicionado',
+  'Calefacción',
+  'Alquiler de equipamiento',
+  'Instructor disponible',
+  'Casilleros',
+  'Servicio de toallas',
+  'Bar/restaurante',
+  'Área de calentamiento',
+  'Marcador electrónico',
+  'Sistema de sonido',
+  'Seguridad',
+  'Primeros auxilios'
+];
 
 export const espaciosModel = {
   /**
@@ -217,10 +267,17 @@ export const espaciosModel = {
       
       // Extraer tipos únicos
       const tiposUnicos = [...new Set(data.map(item => item.tipo))];
+      
+      // Si no hay tipos en la base de datos o son muy pocos, devolver los predefinidos
+      if (tiposUnicos.length < 3) {
+        return TIPOS_ESPACIOS_PREDEFINIDOS;
+      }
+      
       return tiposUnicos;
     } catch (error) {
       console.error('Error al obtener tipos de espacios:', error);
-      return [];
+      // En caso de error, devolver los tipos predefinidos
+      return TIPOS_ESPACIOS_PREDEFINIDOS;
     }
   },
 
@@ -260,10 +317,288 @@ export const espaciosModel = {
       
       // Extraer características únicas
       const caracteristicasUnicas = [...new Set(data.map(item => item.nombre))];
+      
+      // Si no hay características en la base de datos o son muy pocas, devolver las predefinidas
+      if (caracteristicasUnicas.length < 5) {
+        return CARACTERISTICAS_PREDEFINIDAS;
+      }
+      
       return caracteristicasUnicas;
     } catch (error) {
       console.error('Error al obtener características:', error);
-      return [];
+      // En caso de error, devolver las características predefinidas
+      return CARACTERISTICAS_PREDEFINIDAS;
+    }
+  },
+
+  /**
+   * Obtener todos los espacios de un propietario
+   */
+  async getEspaciosByPropietario(propietarioId: number) {
+    try {
+      const { data, error } = await supabase
+        .from('espacios_deportivos')
+        .select(`
+          *,
+          imagenes_espacios(*),
+          caracteristicas_espacios(*),
+          vista_estadisticas_espacios!inner(total_reservas, reservas_completadas, puntuacion_promedio, ingresos_totales)
+        `)
+        .eq('propietario_id', propietarioId)
+        .order('created_at', { ascending: false });
+
+      if (error) throw error;
+      return { data, error: null };
+    } catch (error) {
+      console.error('Error al obtener espacios por propietario:', error);
+      return { data: null, error };
+    }
+  },
+
+  /**
+   * Obtener un espacio específico por ID
+   */
+  async getEspacioById(espacioId: number) {
+    try {
+      const { data, error } = await supabase
+        .from('espacios_deportivos')
+        .select(`
+          *,
+          imagenes_espacios(*),
+          caracteristicas_espacios(*),
+          horarios_disponibilidad(*)
+        `)
+        .eq('id', espacioId)
+        .single();
+
+      if (error) throw error;
+      return { data, error: null };
+    } catch (error) {
+      console.error('Error al obtener espacio por ID:', error);
+      return { data: null, error };
+    }
+  },
+
+  /**
+   * Obtener estadísticas de un espacio específico
+   */
+  async getEstadisticasEspacio(espacioId: number) {
+    try {
+      const { data, error } = await supabase
+        .rpc('obtener_estadisticas_espacio', { espacio_id_param: espacioId });
+
+      if (error) throw error;
+      return { data, error: null };
+    } catch (error) {
+      console.error('Error al obtener estadísticas del espacio:', error);
+      return { data: null, error };
+    }
+  },
+
+  /**
+   * Crear un nuevo espacio deportivo
+   */
+  async createEspacio(espacioData: any) {
+    try {
+      // Crear el espacio básico
+      const { data, error } = await supabase
+        .from('espacios_deportivos')
+        .insert(espacioData)
+        .select()
+        .single();
+
+      if (error) throw error;
+      return { data, error: null };
+    } catch (error) {
+      console.error('Error al crear espacio deportivo:', error);
+      return { data: null, error };
+    }
+  },
+
+  /**
+   * Agregar características a un espacio deportivo
+   */
+  async addCaracteristicas(espacioId: number, caracteristicas: {nombre: string, valor: string}[]) {
+    try {
+      const caracteristicasData = caracteristicas.map(c => ({
+        espacio_id: espacioId,
+        nombre: c.nombre,
+        valor: c.valor
+      }));
+      
+      const { data, error } = await supabase
+        .from('caracteristicas_espacios')
+        .insert(caracteristicasData)
+        .select();
+
+      if (error) throw error;
+      return { data, error: null };
+    } catch (error) {
+      console.error('Error al agregar características:', error);
+      return { data: null, error };
+    }
+  },
+
+  /**
+   * Eliminar característica de un espacio
+   */
+  async deleteCaracteristica(caracteristicaId: number) {
+    try {
+      const { error } = await supabase
+        .from('caracteristicas_espacios')
+        .delete()
+        .eq('id', caracteristicaId);
+
+      if (error) throw error;
+      return { error: null };
+    } catch (error) {
+      console.error('Error al eliminar característica:', error);
+      return { error };
+    }
+  },
+
+  /**
+   * Actualizar un espacio deportivo
+   */
+  async updateEspacio(espacioId: number, espacioData: any) {
+    try {
+      const { data, error } = await supabase
+        .from('espacios_deportivos')
+        .update(espacioData)
+        .eq('id', espacioId)
+        .select()
+        .single();
+
+      if (error) throw error;
+      return { data, error: null };
+    } catch (error) {
+      console.error('Error al actualizar espacio deportivo:', error);
+      return { data: null, error };
+    }
+  },
+
+  /**
+   * Eliminar un espacio deportivo
+   */
+  async deleteEspacio(espacioId: number) {
+    try {
+      const { error } = await supabase
+        .from('espacios_deportivos')
+        .delete()
+        .eq('id', espacioId);
+
+      if (error) throw error;
+      return { error: null };
+    } catch (error) {
+      console.error('Error al eliminar espacio deportivo:', error);
+      return { error };
+    }
+  },
+
+  /**
+   * Agregar imágenes a un espacio deportivo
+   */
+  async addImagenes(espacioId: number, imagenes: {url: string, orden: number}[]) {
+    try {
+      const imagenesData = imagenes.map(img => ({
+        espacio_id: espacioId,
+        url: img.url,
+        orden: img.orden
+      }));
+      
+      const { data, error } = await supabase
+        .from('imagenes_espacios')
+        .insert(imagenesData)
+        .select();
+
+      if (error) throw error;
+      return { data, error: null };
+    } catch (error) {
+      console.error('Error al agregar imágenes:', error);
+      return { data: null, error };
+    }
+  },
+
+  /**
+   * Eliminar imagen de un espacio
+   */
+  async deleteImagen(imagenId: number) {
+    try {
+      const { error } = await supabase
+        .from('imagenes_espacios')
+        .delete()
+        .eq('id', imagenId);
+
+      if (error) throw error;
+      return { error: null };
+    } catch (error) {
+      console.error('Error al eliminar imagen:', error);
+      return { error };
+    }
+  },
+
+  /**
+   * Agregar horarios de disponibilidad a un espacio
+   */
+  async addHorarios(espacioId: number, horarios: Omit<HorarioDisponibilidad, 'id'>[]) {
+    try {
+      const horariosData = horarios.map(h => ({
+        espacio_id: espacioId,
+        dia_semana: h.dia_semana,
+        hora_inicio: h.hora_inicio,
+        hora_fin: h.hora_fin,
+        disponible: h.disponible,
+        precio_especial: h.precio_especial
+      }));
+      
+      const { data, error } = await supabase
+        .from('horarios_disponibilidad')
+        .insert(horariosData)
+        .select();
+
+      if (error) throw error;
+      return { data, error: null };
+    } catch (error) {
+      console.error('Error al agregar horarios:', error);
+      return { data: null, error };
+    }
+  },
+
+  /**
+   * Actualizar un horario de disponibilidad
+   */
+  async updateHorario(horarioId: number, horarioData: Partial<HorarioDisponibilidad>) {
+    try {
+      const { data, error } = await supabase
+        .from('horarios_disponibilidad')
+        .update(horarioData)
+        .eq('id', horarioId)
+        .select()
+        .single();
+
+      if (error) throw error;
+      return { data, error: null };
+    } catch (error) {
+      console.error('Error al actualizar horario:', error);
+      return { data: null, error };
+    }
+  },
+
+  /**
+   * Eliminar un horario de disponibilidad
+   */
+  async deleteHorario(horarioId: number) {
+    try {
+      const { error } = await supabase
+        .from('horarios_disponibilidad')
+        .delete()
+        .eq('id', horarioId);
+
+      if (error) throw error;
+      return { error: null };
+    } catch (error) {
+      console.error('Error al eliminar horario:', error);
+      return { error };
     }
   }
 }; 

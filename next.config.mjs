@@ -11,6 +11,18 @@ const nextConfig = {
     removeConsole: process.env.NODE_ENV === 'production',
   },
   
+  // Configuración de imágenes para Supabase Storage
+  images: {
+    domains: ['adulognymkpjnuitbavf.supabase.co'],
+    remotePatterns: [
+      {
+        protocol: 'https',
+        hostname: 'adulognymkpjnuitbavf.supabase.co',
+        pathname: '/storage/v1/object/public/**',
+      },
+    ],
+  },
+  
   // Configuración de encabezados de seguridad
   async headers() {
     return [

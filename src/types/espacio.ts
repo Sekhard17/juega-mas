@@ -34,6 +34,7 @@ export interface EspacioDeportivo {
   latitud?: number;
   longitud?: number;
   precio_base: number;
+  precio_hora: number; // Precio por hora del espacio
   capacidad_min?: number;
   capacidad_max?: number;
   duracion_turno: number; // en minutos (60, 90, 120, etc.)
@@ -41,6 +42,7 @@ export interface EspacioDeportivo {
   estado_espacio: EstadoEspacio;
   created_at?: string;
   updated_at?: string;
+  calificacion_promedio?: number; // Calificación promedio del espacio
   
   // Relaciones (opcionales porque pueden cargarse por separado)
   caracteristicas?: Caracteristica[];
@@ -61,6 +63,7 @@ export interface FiltrosEspacios {
   ordenar_por?: 'precio_asc' | 'precio_desc' | 'calificacion' | 'popularidad';
   page?: number;
   per_page?: number;
+  estado_espacio?: string;
 }
 
 export interface PaginacionEspacios {

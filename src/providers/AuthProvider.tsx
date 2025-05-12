@@ -5,6 +5,7 @@ import { User } from '@/types/user';
 import { API_ROUTES } from '@/lib/apiConfig';
 import { toast } from 'sonner';
 import { useRouter } from 'next/navigation';
+import { getCookie } from 'cookies-next';
 
 // Tipos
 interface AuthContextType {
@@ -16,6 +17,7 @@ interface AuthContextType {
   logout: () => Promise<void>;
   refreshUser: () => Promise<void>;
   refreshUserData: () => Promise<void>;
+  getIdToken: () => Promise<string>;
 }
 
 interface RegisterFormData {
@@ -87,6 +89,34 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
     checkAuth();
   }, []);
+
+  // Obtener token JWT
+  const getIdToken = async (): Promise<string> => {
+    // Intentar obtener el token de las cookies
+    const authToken = getCookie('authToken');
+    
+    if (authToken && typeof authToken === 'string') {
+      return authToken;
+    }
+    
+    // Si no hay token en las cookies, intentar obtenerlo de la API
+    try {
+      const response = await fetch(API_ROUTES.AUTH.VERIFY_TOKEN);
+      if (!response.ok) {
+        throw new Error('No se pudo obtener el token de autenticación');
+      }
+      
+      const data = await response.json();
+      if (data.token) {
+        return data.token;
+      }
+      
+      throw new Error('Token no disponible');
+    } catch (error) {
+      console.error('Error al obtener token de autenticación:', error);
+      throw new Error('No se pudo obtener el token de autenticación');
+    }
+  };
 
   // Iniciar sesión
   const login = async (email: string, password: string): Promise<boolean> => {
@@ -237,6 +267,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         logout,
         refreshUser,
         refreshUserData: refreshUser,
+        getIdToken,
       }}
     >
       {children}

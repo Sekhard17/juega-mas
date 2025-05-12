@@ -15,6 +15,7 @@ import { ViewMode } from "@/lib/viewPreference";
 import { EspacioDeportivo, FiltrosEspacios, PaginacionEspacios } from "@/types/espacio";
 import { espaciosModel } from "@/models/espaciosModel";
 import { motion } from "framer-motion";
+import { formatCurrency } from '@/lib/utils';
 
 interface ListadoEspaciosProps {
   viewMode: ViewMode;
@@ -58,15 +59,6 @@ export const ListadoEspacios: FC<ListadoEspaciosProps> = ({
 
     cargarEspacios();
   }, [filtros]);
-
-  // Función para formatear precio
-  const formatearPrecio = (precio: number) => {
-    return precio.toLocaleString('es-CL', {
-      style: 'currency',
-      currency: 'CLP',
-      maximumFractionDigits: 0
-    });
-  };
 
   // Función para formatear capacidad
   const formatearCapacidad = (min?: number, max?: number) => {
@@ -161,7 +153,7 @@ export const ListadoEspacios: FC<ListadoEspaciosProps> = ({
                   {/* Precio - tag superior derecha */}
                   <div className="absolute top-3 right-3 z-20">
                     <div className="flex items-center bg-emerald-600/90 text-white px-3 py-1.5 rounded-lg text-sm font-bold shadow-sm">
-                      {formatearPrecio(espacio.precio_base)}
+                      {formatCurrency(espacio.precio_base)}
                     </div>
                   </div>
                   
@@ -227,7 +219,7 @@ export const ListadoEspacios: FC<ListadoEspaciosProps> = ({
                         Desde
                       </span>
                       <span className="text-emerald-600 dark:text-emerald-400 font-bold text-lg">
-                        {formatearPrecio(espacio.precio_base)}
+                        {formatCurrency(espacio.precio_base)}
                       </span>
                     </div>
                     <button className="px-4 py-2 text-sm rounded-lg bg-emerald-600 hover:bg-emerald-700 active:bg-emerald-800 text-white transition-colors shadow-sm hover:shadow">
@@ -328,7 +320,7 @@ export const ListadoEspacios: FC<ListadoEspaciosProps> = ({
                 </td>
                 <td className="px-4 py-4 whitespace-nowrap text-right">
                   <div className="text-sm font-bold text-emerald-600 dark:text-emerald-400">
-                    {formatearPrecio(espacio.precio_base)}
+                    {formatCurrency(espacio.precio_base)}
                   </div>
                 </td>
                 <td className="px-4 py-4 whitespace-nowrap text-right text-sm font-medium">
