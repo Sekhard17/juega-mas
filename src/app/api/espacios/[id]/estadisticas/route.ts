@@ -6,8 +6,8 @@ export async function GET(
   { params }: { params: { id: string } }
 ) {
   try {
-    // Esperar a que params esté disponible antes de usar sus propiedades
-    const { id } = await params;
+    // Obtenemos el ID directamente del objeto params
+    const { id } = params;
     const espacioId = parseInt(id);
     
     if (isNaN(espacioId)) {
