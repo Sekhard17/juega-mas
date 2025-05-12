@@ -425,20 +425,21 @@ export default function ContactoPage() {
 
             {/* Sección CEO */}
             <div className="bg-gradient-to-br from-emerald-500 to-teal-600 rounded-2xl shadow-xl p-8 text-white">
-              <div className="flex items-center space-x-4 mb-6">
+              <div className="flex items-center space-x-6 mb-6">
                 <div className="flex-shrink-0">
                   <Image
-                    src="/images/ceo-profile.jpg"
-                    alt="Joaquín Andrade"
-                    width={64}
-                    height={64}
-                    className="rounded-full border-2 border-white"
+                    src="/avatars/CEO.jpeg"
+                    alt="Sekhard"
+                    width={96}
+                    height={96}
+                    className="rounded-full border-2 border-white object-cover"
                   />
                 </div>
                 <div>
                   <h3 className="text-xl font-bold">Joaquín Andrade</h3>
                   <p className="text-emerald-100">Fundador & CEO</p>
-                  <p className="text-sm text-emerald-100">JuegaMás | Spectrum Code Software</p>
+                  <p className="text-emerald-200 text-sm">Analista Programador</p>
+                  <p className="text-emerald-200 text-sm">JuegaMás | Spectrum Code Software</p>
                 </div>
               </div>
               <blockquote className="text-emerald-50 italic">
