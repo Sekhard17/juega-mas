@@ -443,7 +443,7 @@ export default function ContactoPage() {
                 </div>
               </div>
               <blockquote className="text-emerald-50 italic">
-                "Como propietario de instalaciones deportivas, entiendo los desafíos de maximizar la ocupación y gestionar reservas eficientemente. JuegaMás nació para resolver estos problemas, conectando tus espacios con deportistas y ofreciéndote las herramientas digitales necesarias para crecer. ¿Listo para transformar tu negocio?"
+                "Como jugador apasionado y desarrollador, he experimentado de primera mano los problemas de reservar canchas deportivas. Esta experiencia me inspiró a crear JuegaMás, combinando mi conocimiento técnico con mi pasión por el deporte para desarrollar una solución que beneficie tanto a jugadores como propietarios. ¿Quieres que tu instalación sea parte de esta revolución?"
               </blockquote>
             </div>
 
