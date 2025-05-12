@@ -3,11 +3,11 @@ import { EstadisticasController } from '@/controllers/estadisticasController';
 
 export async function GET(
   request: Request,
-  { params }: { params: { id: string } }
+  context: { params: { id: string } }
 ) {
   try {
     // Obtenemos el ID directamente del objeto params
-    const { id } = params;
+    const { id } = context.params;
     const espacioId = parseInt(id);
     
     if (isNaN(espacioId)) {
