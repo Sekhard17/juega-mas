@@ -189,10 +189,10 @@ export default function ContactoPage() {
         {/* Encabezado principal */}
         <div className="text-center mb-8">
           <h1 className="text-3xl md:text-4xl font-bold bg-gradient-to-r from-emerald-600 to-teal-500 dark:from-emerald-400 dark:to-teal-300 bg-clip-text text-transparent mb-2">
-            ¡Conversemos sobre tu próximo proyecto!
+            ¿Tienes un recinto deportivo? Maximiza tus ingresos
           </h1>
           <p className="text-base md:text-lg text-gray-600 dark:text-gray-300 max-w-3xl mx-auto">
-            En JuegaMás creemos que cada idea merece la oportunidad de brillar. Estamos aquí para escucharte y crear juntos algo extraordinario.
+            Únete a JuegaMás y lleva tu negocio al siguiente nivel. Aumenta la visibilidad de tus instalaciones, optimiza tu agenda y recibe más reservas sin esfuerzo.
           </p>
         </div>
 
@@ -205,7 +205,7 @@ export default function ContactoPage() {
             className="bg-white dark:bg-gray-800 rounded-2xl shadow-xl p-6 h-fit"
           >
             <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-4">
-              Contáctanos
+              Registra tu espacio deportivo
             </h2>
             <form onSubmit={handleSubmit} className="space-y-4">
               {/* Primera fila: Nombre y Email */}
@@ -364,23 +364,23 @@ export default function ContactoPage() {
             {/* Información de contacto */}
             <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-xl p-8">
               <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-4">
-                ¿Por qué trabajar juntos?
+                ¿Por qué unirte a JuegaMás?
               </h3>
               <div className="space-y-6">
                 <div className="flex items-start space-x-4">
                   <div className="flex-shrink-0">
                     <div className="p-2 bg-emerald-100 dark:bg-emerald-900 rounded-lg">
                       <svg className="w-6 h-6 text-emerald-600 dark:text-emerald-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 11c0 3.517-1.009 6.799-2.753 9.571m-3.44-2.04l.054-.09A13.916 13.916 0 008 11a4 4 0 118 0c0 1.017-.07 2.019-.203 3m-2.118 6.844A21.88 21.88 0 0015.171 17m3.839 1.132c.645-2.266.99-4.659.99-7.132A8 8 0 008 4.07M3 15.364c.64-1.319 1-2.8 1-4.364 0-1.457.39-2.823 1.07-4" />
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                       </svg>
                     </div>
                   </div>
                   <div>
                     <h4 className="text-lg font-semibold text-gray-900 dark:text-white">
-                      Visión Innovadora
+                      Aumenta tus ingresos
                     </h4>
                     <p className="mt-1 text-gray-600 dark:text-gray-300">
-                      Como nuevo emprendimiento, traemos ideas frescas y una perspectiva única al mercado de entretenimiento.
+                      Nuestros socios experimentan un aumento promedio del 30% en sus reservas durante los primeros tres meses.
                     </p>
                   </div>
                 </div>
@@ -389,16 +389,16 @@ export default function ContactoPage() {
                   <div className="flex-shrink-0">
                     <div className="p-2 bg-emerald-100 dark:bg-emerald-900 rounded-lg">
                       <svg className="w-6 h-6 text-emerald-600 dark:text-emerald-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14 10h4.764a2 2 0 011.789 2.894l-3.5 7A2 2 0 0115.263 21h-4.017c-.163 0-.326-.02-.485-.06L7 20m7-10V5a2 2 0 00-2-2h-.095c-.5 0-.905.405-.905 0 .714-.211 1.412-.608 2.006L7 11v9m7-10h-2M7 20H5a2 2 0 01-2-2v-6a2 2 0 012-2h2.5" />
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4" />
                       </svg>
                     </div>
                   </div>
                   <div>
                     <h4 className="text-lg font-semibold text-gray-900 dark:text-white">
-                      Compromiso Personal
+                      Gestión sin complicaciones
                     </h4>
                     <p className="mt-1 text-gray-600 dark:text-gray-300">
-                      Como fundador, me involucro directamente en cada proyecto para asegurar su éxito y calidad.
+                      Panel de administración intuitivo para gestionar tus reservas, horarios y pagos en un solo lugar.
                     </p>
                   </div>
                 </div>
@@ -407,16 +407,16 @@ export default function ContactoPage() {
                   <div className="flex-shrink-0">
                     <div className="p-2 bg-emerald-100 dark:bg-emerald-900 rounded-lg">
                       <svg className="w-6 h-6 text-emerald-600 dark:text-emerald-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
                       </svg>
                     </div>
                   </div>
                   <div>
                     <h4 className="text-lg font-semibold text-gray-900 dark:text-white">
-                      Enfoque en el Crecimiento
+                      Acceso a nuevos clientes
                     </h4>
                     <p className="mt-1 text-gray-600 dark:text-gray-300">
-                      Buscamos crecer junto a nuestros clientes y partners, construyendo relaciones duraderas.
+                      Conecta con nuestra comunidad de +15,000 deportistas activos buscando espacios como el tuyo.
                     </p>
                   </div>
                 </div>
@@ -443,36 +443,36 @@ export default function ContactoPage() {
                 </div>
               </div>
               <blockquote className="text-emerald-50 italic">
-                "Como emprendedor apasionado por la tecnología y la innovación, estoy comprometido a revolucionar la forma en que las personas disfrutan del entretenimiento. ¿Te gustaría ser parte de este emocionante proyecto?"
+                "Como propietario de instalaciones deportivas, entiendo los desafíos de maximizar la ocupación y gestionar reservas eficientemente. JuegaMás nació para resolver estos problemas, conectando tus espacios con deportistas y ofreciéndote las herramientas digitales necesarias para crecer. ¿Listo para transformar tu negocio?"
               </blockquote>
             </div>
 
             {/* Información de reuniones */}
             <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-xl p-8">
               <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-4">
-                ¡Conversemos!
+                Comienza a recibir reservas
               </h3>
               <p className="text-gray-600 dark:text-gray-300 mb-4">
-                Ya sea que tengas una idea clara o solo quieras explorar posibilidades, estamos aquí para escucharte.
+                Unirse a JuegaMás es rápido y sin riesgos. Nuestro equipo te guiará en cada paso del proceso.
               </p>
               <ul className="space-y-4 text-gray-600 dark:text-gray-300">
                 <li className="flex items-center space-x-3">
                   <svg className="w-5 h-5 text-emerald-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
                   </svg>
-                  <span>Reuniones presenciales o virtuales</span>
+                  <span>Sin comisiones por inicio</span>
                 </li>
                 <li className="flex items-center space-x-3">
                   <svg className="w-5 h-5 text-emerald-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
                   </svg>
-                  <span>Horarios que se adaptan a ti</span>
+                  <span>Configuración en menos de 48 horas</span>
                 </li>
                 <li className="flex items-center space-x-3">
                   <svg className="w-5 h-5 text-emerald-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M18.364 5.636l-3.536 3.536m0 5.656l3.536 3.536M9.172 9.172L5.636 5.636m3.536 9.192l-3.536 3.536M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                   </svg>
-                  <span>Primera reunión sin compromiso</span>
+                  <span>Asistencia personalizada continua</span>
                 </li>
               </ul>
             </div>
