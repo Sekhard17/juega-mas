@@ -3,7 +3,7 @@ import { EstadisticasController } from '@/controllers/estadisticasController';
 
 export async function GET(
   request: Request,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     // Esperar a que params esté disponible antes de usar sus propiedades
