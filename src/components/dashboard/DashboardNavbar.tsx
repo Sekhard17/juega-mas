@@ -51,6 +51,9 @@ export default function DashboardNavbar({ onToggleSidebar }: DashboardNavbarProp
     }
   };
 
+  // Verificar si el usuario es propietario
+  const isPropietario = user?.role === 'propietario';
+
   return (
     <nav className="bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 fixed top-0 right-0 z-40 transition-all duration-300 ease-in-out" style={{ left: 'var(--sidebar-width)' }}>
       <div className="flex items-center justify-between h-16 px-4 sm:px-6 lg:px-8">
@@ -78,32 +81,34 @@ export default function DashboardNavbar({ onToggleSidebar }: DashboardNavbarProp
           </button>
         </div>
 
-        {/* Próxima reserva en el centro */}
+        {/* Próxima reserva en el centro - solo para clientes/usuarios */}
         <div className="flex-1 flex justify-center">
-          {proximaReserva ? (
-            <Link href="/dashboard/cliente/reservas" className="group flex items-center space-x-3 hover:bg-gray-50 dark:hover:bg-gray-700/50 px-4 py-1.5 rounded-full transition-colors">
-              <div className="flex items-center space-x-1.5 text-gray-500 dark:text-gray-400">
-                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-                </svg>
-                <span className="text-sm">Próxima reserva:</span>
-              </div>
-              <div className="flex items-center space-x-2">
-                <span className="text-sm font-medium text-gray-900 dark:text-white">{proximaReserva.nombre}</span>
-                <span className="text-sm text-emerald-600 dark:text-emerald-400">{proximaReserva.fecha} • {proximaReserva.hora}</span>
+          {!isPropietario && (
+            proximaReserva ? (
+              <Link href="/dashboard/cliente/reservas" className="group flex items-center space-x-3 hover:bg-gray-50 dark:hover:bg-gray-700/50 px-4 py-1.5 rounded-full transition-colors">
+                <div className="flex items-center space-x-1.5 text-gray-500 dark:text-gray-400">
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                  </svg>
+                  <span className="text-sm">Próxima reserva:</span>
+                </div>
+                <div className="flex items-center space-x-2">
+                  <span className="text-sm font-medium text-gray-900 dark:text-white">{proximaReserva.nombre}</span>
+                  <span className="text-sm text-emerald-600 dark:text-emerald-400">{proximaReserva.fecha} • {proximaReserva.hora}</span>
+                  <svg className="w-4 h-4 text-gray-400 group-hover:text-emerald-500 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 5l7 7-7 7" />
+                  </svg>
+                </div>
+              </Link>
+            ) : (
+              <Link href="/dashboard/cliente/explorar" className="group flex items-center space-x-2 text-sm text-gray-500 dark:text-gray-400 hover:text-emerald-600 dark:hover:text-emerald-400 transition-colors">
+                <span>No tienes reservas programadas</span>
+                <span className="text-emerald-600 dark:text-emerald-400">Explorar espacios</span>
                 <svg className="w-4 h-4 text-gray-400 group-hover:text-emerald-500 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 5l7 7-7 7" />
                 </svg>
-              </div>
-            </Link>
-          ) : (
-            <Link href="/dashboard/cliente/explorar" className="group flex items-center space-x-2 text-sm text-gray-500 dark:text-gray-400 hover:text-emerald-600 dark:hover:text-emerald-400 transition-colors">
-              <span>No tienes reservas programadas</span>
-              <span className="text-emerald-600 dark:text-emerald-400">Explorar espacios</span>
-              <svg className="w-4 h-4 text-gray-400 group-hover:text-emerald-500 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 5l7 7-7 7" />
-              </svg>
-            </Link>
+              </Link>
+            )
           )}
         </div>
 

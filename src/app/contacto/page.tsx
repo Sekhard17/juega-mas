@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { motion } from 'framer-motion';
 import { toast } from 'sonner';
 import Image from 'next/image';
+import { API_ROUTES } from '@/lib/apiConfig';
 
 // Constantes para validación
 const MAX_MENSAJE_LENGTH = 500;
@@ -147,7 +148,7 @@ export default function ContactoPage() {
       setIsSubmitting(true);
       
       // Enviar datos al endpoint
-      const response = await fetch('/api/contacto', {
+      const response = await fetch(API_ROUTES.CONTACTO.ENVIAR, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
