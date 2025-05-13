@@ -16,6 +16,9 @@ const Navbar = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
 
+  // Comprobar si estamos en la página de inicio
+  const isHomePage = pathname === '/main/inicio';
+
   // Efecto para detectar el scroll y cambiar el estilo de la navbar
   useEffect(() => {
     const handleScroll = () => {
@@ -63,9 +66,9 @@ const Navbar = () => {
       <div className="flex items-center space-x-2">
         <Link
           href="/auth/login"
-          className="group inline-flex items-center px-3.5 py-1.5 rounded-lg text-sm font-medium 
+          className={`group inline-flex items-center px-3.5 py-1.5 rounded-lg text-sm font-medium 
           bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-600 hover:to-teal-700
-          text-white shadow-sm hover:shadow-md transition-all duration-200"
+          text-white shadow-sm hover:shadow-md transition-all duration-200`}
         >
           <svg 
             className="mr-1.5 h-4 w-4 text-emerald-100 group-hover:animate-pulse" 
@@ -84,13 +87,14 @@ const Navbar = () => {
         </Link>
         <Link
           href="/auth/register"
-          className="group inline-flex items-center px-3.5 py-1.5 rounded-lg text-sm font-medium
-          bg-white dark:bg-gray-800 text-emerald-600 dark:text-emerald-400
-          border border-emerald-500 dark:border-emerald-600
-          hover:bg-emerald-50 dark:hover:bg-emerald-900/20 transition-all duration-200"
+          className={`group inline-flex items-center px-3.5 py-1.5 rounded-lg text-sm font-medium
+          ${!scrolled && isHomePage 
+            ? 'bg-white/20 backdrop-blur-sm text-white border border-white/50 hover:bg-white/30' 
+            : 'bg-white dark:bg-gray-800 text-emerald-600 dark:text-emerald-400 border border-emerald-500 dark:border-emerald-600 hover:bg-emerald-50 dark:hover:bg-emerald-900/20'
+          } transition-all duration-200`}
         >
           <svg 
-            className="mr-1.5 h-4 w-4 text-emerald-500 dark:text-emerald-400 group-hover:animate-pulse" 
+            className={`mr-1.5 h-4 w-4 ${!scrolled && isHomePage ? 'text-white' : 'text-emerald-500 dark:text-emerald-400'} group-hover:animate-pulse`}
             fill="none" 
             viewBox="0 0 24 24" 
             stroke="currentColor"
@@ -235,7 +239,7 @@ const Navbar = () => {
             <div className="flex-shrink-0 flex items-center">
               <Link href="/" className="flex items-center">
                 <Image
-                  src={theme === 'dark' ? '/logos/JuegaMasOscuro.png' : '/logos/JuegaMas.png'}
+                  src={theme === 'dark' || (!scrolled && isHomePage) ? '/logos/JuegaMasOscuro.png' : '/logos/JuegaMas.png'}
                   alt="JuegaMás Logo"
                   width={150}
                   height={40}
@@ -251,8 +255,8 @@ const Navbar = () => {
                   href={link.href}
                   className={`${
                     pathname === link.href
-                      ? 'border-emerald-500 text-emerald-600 dark:text-emerald-400'
-                      : 'border-transparent text-gray-700 dark:text-gray-300 hover:border-emerald-300 dark:hover:border-emerald-600 hover:text-emerald-500 dark:hover:text-emerald-400'
+                      ? `border-emerald-500 ${!scrolled && isHomePage ? 'text-white dark:text-emerald-400' : 'text-emerald-600 dark:text-emerald-400'}`
+                      : `border-transparent ${!scrolled && isHomePage ? 'text-white dark:text-gray-300 hover:text-white/80 dark:hover:text-emerald-400' : 'text-gray-700 dark:text-gray-300 hover:text-emerald-500 dark:hover:text-emerald-400'} hover:border-emerald-300 dark:hover:border-emerald-600`
                   } inline-flex items-center px-1 pt-1 border-b-2 text-sm font-bold tracking-wider transition-colors duration-200`}
                 >
                   {link.name}
@@ -263,7 +267,7 @@ const Navbar = () => {
           <div className="hidden sm:ml-6 sm:flex sm:items-center space-x-4">
             <button
               onClick={toggleTheme}
-              className="p-2 rounded-full text-gray-600 dark:text-gray-300 hover:text-emerald-500 dark:hover:text-emerald-400 focus:outline-none transition-colors duration-200"
+              className={`p-2 rounded-full ${!scrolled && isHomePage ? 'text-white dark:text-gray-300 hover:text-white/80 dark:hover:text-emerald-400' : 'text-gray-600 dark:text-gray-300 hover:text-emerald-500 dark:hover:text-emerald-400'} focus:outline-none transition-colors duration-200`}
               aria-label="Cambiar tema"
             >
               {theme === 'dark' ? (
@@ -293,7 +297,7 @@ const Navbar = () => {
           <div className="flex items-center sm:hidden">
             <button
               onClick={toggleTheme}
-              className="p-2 mr-2 rounded-full text-gray-600 dark:text-gray-300 hover:text-emerald-500 dark:hover:text-emerald-400 focus:outline-none"
+              className={`p-2 mr-2 rounded-full ${!scrolled && isHomePage ? 'text-white dark:text-gray-300 hover:text-white/80 dark:hover:text-emerald-400' : 'text-gray-600 dark:text-gray-300 hover:text-emerald-500 dark:hover:text-emerald-400'} focus:outline-none transition-colors duration-200`}
               aria-label="Cambiar tema"
             >
               {theme === 'dark' ? (
@@ -318,7 +322,7 @@ const Navbar = () => {
             </button>
             <button
               onClick={() => setIsMenuOpen(!isMenuOpen)}
-              className="inline-flex items-center justify-center p-2 rounded-md text-gray-600 dark:text-gray-300 hover:text-emerald-500 dark:hover:text-emerald-400 hover:bg-gray-100 dark:hover:bg-gray-800 focus:outline-none transition-colors duration-200"
+              className={`inline-flex items-center justify-center p-2 rounded-md ${!scrolled && isHomePage ? 'text-white dark:text-gray-300 hover:text-white/80 dark:hover:text-emerald-400 hover:bg-white/10 dark:hover:bg-gray-800' : 'text-gray-600 dark:text-gray-300 hover:text-emerald-500 dark:hover:text-emerald-400 hover:bg-gray-100 dark:hover:bg-gray-800'} focus:outline-none transition-colors duration-200`}
               aria-expanded="false"
             >
               <span className="sr-only">Abrir menú principal</span>

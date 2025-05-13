@@ -137,23 +137,23 @@ export default function SearchBar() {
   return (
     <div className="w-full max-w-4xl mx-auto mt-8 relative z-30">
       {/* Efectos de fondo decorativos */}
-      <div className="absolute -inset-2 bg-gradient-to-r from-emerald-500/20 to-teal-500/20 rounded-2xl blur-xl -z-10"></div>
-      <div className="absolute -inset-0.5 bg-gradient-to-r from-emerald-500/30 to-teal-500/30 rounded-xl -z-5"></div>
+      <div className="absolute -inset-4 bg-gradient-to-r from-emerald-500/10 to-teal-600/10 rounded-2xl blur-xl -z-10"></div>
+      <div className="absolute -inset-0.5 bg-gradient-to-br from-emerald-500/20 to-teal-500/20 rounded-xl -z-5"></div>
       
-      <div className="relative bg-white/90 dark:bg-gray-800/90 backdrop-blur-md rounded-xl shadow-2xl overflow-hidden border border-emerald-100 dark:border-emerald-900/50">
+      <div className="relative bg-white/95 dark:bg-gray-800/95 backdrop-blur-lg rounded-xl shadow-2xl overflow-hidden border border-white/30 dark:border-gray-700/30">
         <form onSubmit={handleSearch} className="flex flex-col md:flex-row">
           {/* Ubicación */}
-          <div ref={ubicacionRef} className="relative flex-1 md:border-r border-gray-200 dark:border-gray-700 group">
+          <div ref={ubicacionRef} className="relative flex-1 group">
             <div 
-              className={`p-5 cursor-pointer transition-all duration-200 ${
-                showUbicacionDropdown ? 'bg-emerald-50 dark:bg-emerald-900/20' : 'hover:bg-emerald-50 dark:hover:bg-emerald-900/10'
+              className={`p-3 cursor-pointer transition-all duration-200 ${
+                showUbicacionDropdown ? 'bg-emerald-50/50 dark:bg-emerald-900/10' : 'hover:bg-gray-50/70 dark:hover:bg-gray-700/30'
               }`}
               onClick={() => {
                 setShowUbicacionDropdown(!showUbicacionDropdown);
                 setShowDeporteDropdown(false);
               }}
             >
-              <div className="flex items-center mb-1">
+              <div className="flex items-center mb-0.5">
                 <svg className={`h-4 w-4 mr-2 ${
                   showUbicacionDropdown ? 'text-emerald-500' : 'text-gray-400 group-hover:text-emerald-500'
                 } transition-colors duration-200`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -172,18 +172,18 @@ export default function SearchBar() {
                 onChange={(e) => setUbicacion(e.target.value)}
                 onClick={(e) => e.stopPropagation()}
                 placeholder="¿Dónde quieres jugar?"
-                className="w-full font-medium text-gray-900 dark:text-white bg-transparent border-none focus:ring-0 focus:outline-none placeholder-gray-400 dark:placeholder-gray-500"
+                className="w-full font-medium text-gray-900 dark:text-white bg-transparent border-none focus:ring-0 focus:outline-none placeholder-gray-400 dark:placeholder-gray-500 text-sm"
               />
             </div>
             
             {/* Dropdown de ubicaciones */}
             {showUbicacionDropdown && (
-              <div className="absolute top-full left-0 right-0 bg-white dark:bg-gray-800 shadow-xl rounded-b-lg z-10 max-h-60 overflow-y-auto border border-gray-100 dark:border-gray-700 divide-y divide-gray-100 dark:divide-gray-700">
+              <div className="absolute top-full left-0 right-0 bg-white/95 dark:bg-gray-800/95 backdrop-blur-md shadow-xl rounded-b-xl z-10 max-h-60 overflow-y-auto border border-gray-100/50 dark:border-gray-700/50 divide-y divide-gray-100/30 dark:divide-gray-700/30">
                 {ciudadesFiltradas.length > 0 ? (
                   ciudadesFiltradas.map((ciudad) => (
                     <div 
                       key={ciudad} 
-                      className="p-3 hover:bg-emerald-50 dark:hover:bg-emerald-900/20 cursor-pointer transition-colors duration-150"
+                      className="p-3 hover:bg-emerald-50/50 dark:hover:bg-emerald-900/10 cursor-pointer transition-colors duration-150"
                       onClick={() => {
                         setUbicacion(ciudad);
                         setShowUbicacionDropdown(false);
@@ -207,18 +207,21 @@ export default function SearchBar() {
             )}
           </div>
           
+          {/* Separador vertical */}
+          <div className="hidden md:block w-px bg-gradient-to-b from-gray-100/50 via-gray-300/50 to-gray-100/50 dark:from-gray-700/30 dark:via-gray-600/30 dark:to-gray-700/30 mx-0.5"></div>
+          
           {/* Tipo de Deporte */}
-          <div ref={deporteRef} className="relative flex-1 md:border-r border-gray-200 dark:border-gray-700 group">
+          <div ref={deporteRef} className="relative flex-1 group">
             <div 
-              className={`p-5 cursor-pointer transition-all duration-200 ${
-                showDeporteDropdown ? 'bg-emerald-50 dark:bg-emerald-900/20' : 'hover:bg-emerald-50 dark:hover:bg-emerald-900/10'
+              className={`p-3 cursor-pointer transition-all duration-200 ${
+                showDeporteDropdown ? 'bg-emerald-50/50 dark:bg-emerald-900/10' : 'hover:bg-gray-50/70 dark:hover:bg-gray-700/30'
               }`}
               onClick={() => {
                 setShowDeporteDropdown(!showDeporteDropdown);
                 setShowUbicacionDropdown(false);
               }}
             >
-              <div className="flex items-center mb-1">
+              <div className="flex items-center mb-0.5">
                 {deporte ? (
                   <span className={`h-4 w-4 mr-2 ${
                     showDeporteDropdown ? 'text-emerald-500' : 'text-gray-400 group-hover:text-emerald-500'
@@ -239,18 +242,18 @@ export default function SearchBar() {
                   Deporte
                 </label>
               </div>
-              <div className="font-medium text-gray-900 dark:text-white">
+              <div className="font-medium text-gray-900 dark:text-white text-sm">
                 {deporte ? tiposDeporte.find(t => t.id === deporte)?.nombre : 'Selecciona un deporte'}
               </div>
             </div>
             
             {/* Dropdown de deportes */}
             {showDeporteDropdown && (
-              <div className="absolute top-full left-0 right-0 bg-white dark:bg-gray-800 shadow-xl rounded-b-lg z-10 max-h-60 overflow-y-auto border border-gray-100 dark:border-gray-700 divide-y divide-gray-100 dark:divide-gray-700">
+              <div className="absolute top-full left-0 right-0 bg-white/95 dark:bg-gray-800/95 backdrop-blur-md shadow-xl rounded-b-xl z-10 max-h-60 overflow-y-auto border border-gray-100/50 dark:border-gray-700/50 divide-y divide-gray-100/30 dark:divide-gray-700/30">
                 {tiposDeporte.map((tipo) => (
                   <div 
                     key={tipo.id} 
-                    className="p-3 hover:bg-emerald-50 dark:hover:bg-emerald-900/20 cursor-pointer transition-colors duration-150"
+                    className="p-3 hover:bg-emerald-50/50 dark:hover:bg-emerald-900/10 cursor-pointer transition-colors duration-150"
                     onClick={() => {
                       setDeporte(tipo.id);
                       setShowDeporteDropdown(false);
@@ -268,10 +271,13 @@ export default function SearchBar() {
             )}
           </div>
           
+          {/* Separador vertical */}
+          <div className="hidden md:block w-px bg-gradient-to-b from-gray-100/50 via-gray-300/50 to-gray-100/50 dark:from-gray-700/30 dark:via-gray-600/30 dark:to-gray-700/30 mx-0.5"></div>
+          
           {/* Fecha */}
           <div className="relative flex-1 group">
-            <div className="p-5 cursor-pointer hover:bg-emerald-50 dark:hover:bg-emerald-900/10 transition-all duration-200">
-              <div className="flex items-center mb-1">
+            <div className="p-3 cursor-pointer hover:bg-gray-50/70 dark:hover:bg-gray-700/30 transition-all duration-200">
+              <div className="flex items-center mb-0.5">
                 <svg className="h-4 w-4 mr-2 text-gray-400 group-hover:text-emerald-500 transition-colors duration-200" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
                 </svg>
@@ -284,16 +290,16 @@ export default function SearchBar() {
                 value={fecha || tomorrowFormatted}
                 onChange={(e) => setFecha(e.target.value)}
                 min={tomorrowFormatted}
-                className="w-full font-medium text-gray-900 dark:text-white bg-transparent border-none focus:ring-0 focus:outline-none"
+                className="w-full font-medium text-gray-900 dark:text-white bg-transparent border-none focus:ring-0 focus:outline-none text-sm"
               />
             </div>
           </div>
           
           {/* Botón de búsqueda */}
-          <div className="p-3 md:p-2">
+          <div className="p-1.5 md:p-1.5">
             <button 
               type="submit"
-              className="w-full h-full group flex items-center justify-center px-8 py-4 bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-600 hover:to-teal-700 text-white font-bold rounded-lg md:rounded-lg transition-all duration-300 shadow-md hover:shadow-lg transform hover:-translate-y-0.5"
+              className="w-full h-full group flex items-center justify-center px-6 py-2.5 bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-600 hover:to-teal-700 text-white font-semibold rounded-lg transition-all duration-300 shadow-md hover:shadow-xl transform hover:-translate-y-0.5 hover:scale-[1.02]"
             >
               <svg className="h-5 w-5 mr-2 group-hover:animate-pulse" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />

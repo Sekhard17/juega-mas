@@ -289,20 +289,21 @@ export default function Home() {
                 </div>
                 
                 {/* Teléfono */}
-                <div className="relative bg-gray-900 rounded-[3rem] overflow-hidden border-8 border-gray-800 shadow-2xl transform transition-all duration-500 hover:scale-105">
+                <div className="relative bg-gray-900 rounded-[2rem] overflow-hidden border-8 border-gray-800 shadow-2xl transform transition-all duration-500 hover:scale-105 w-[240px] mx-auto">
                   {/* Notch del teléfono */}
-                  <div className="absolute top-0 inset-x-0 h-6 bg-gray-800 rounded-b-xl z-10 flex justify-center items-end pb-1">
-                    <div className="w-20 h-1.5 bg-gray-600 rounded-full"></div>
+                  <div className="absolute top-0 inset-x-0 h-5 bg-gray-800 rounded-b-xl z-10 flex justify-center items-end pb-1">
+                    <div className="w-16 h-1.5 bg-gray-600 rounded-full"></div>
                   </div>
                   
                   {/* Pantalla */}
-                  <div className="pt-8 pb-2 h-[500px] relative overflow-hidden">
+                  <div className="pt-6 pb-2 h-[420px] relative overflow-hidden">
                     <Image
-                      src="/images/app-screenshot.jpg"
+                      src="/movil.png"
                       alt="JuegaMás App"
-                      width={280}
-                      height={500}
-                      className="w-full h-full object-cover"
+                      width={240}
+                      height={420}
+                      className="w-full h-full object-contain"
+                      priority
                     />
                     
                     {/* Overlay con gradiente para dar profundidad */}
@@ -310,12 +311,12 @@ export default function Home() {
                   </div>
                   
                   {/* Botón home */}
-                  <div className="absolute bottom-1 left-1/2 transform -translate-x-1/2 w-12 h-1 bg-gray-600 rounded-full"></div>
+                  <div className="absolute bottom-1 left-1/2 transform -translate-x-1/2 w-10 h-1 bg-gray-600 rounded-full"></div>
                 </div>
                 
                 {/* Elementos decorativos flotantes */}
-                <div className="absolute -top-6 -right-6 w-20 h-20 bg-emerald-500 rounded-full opacity-20 animate-pulse"></div>
-                <div className="absolute -bottom-8 -left-8 w-24 h-24 bg-teal-500 rounded-full opacity-20 animate-pulse delay-700"></div>
+                <div className="absolute -top-6 -right-6 w-16 h-16 bg-emerald-500 rounded-full opacity-20 animate-pulse"></div>
+                <div className="absolute -bottom-8 -left-8 w-20 h-20 bg-teal-500 rounded-full opacity-20 animate-pulse delay-700"></div>
               </div>
             </div>
           </div>
