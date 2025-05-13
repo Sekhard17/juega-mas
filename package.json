@@ -16,7 +16,6 @@
     "@heroicons/react": "^2.2.0",
     "@next/font": "^14.2.15",
     "@supabase/supabase-js": "2.49.4",
-    "@tremor/react": "^3.18.7",
     "bcryptjs": "3.0.2",
     "cookies-next": "5.1.0",
     "framer-motion": "^12.10.4",
@@ -26,6 +25,7 @@
     "next": "15.3.1",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
+    "recharts": "^2.15.3",
     "sonner": "2.0.3",
     "zod": "3.24.3"
   },

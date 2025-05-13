@@ -42,5 +42,18 @@ export const API_ROUTES = {
     RESERVAS: `${API_BASE_URL}/propietario/reservas`,
     RESEÑAS: `${API_BASE_URL}/propietario/reseñas`,
     INGRESOS: `${API_BASE_URL}/propietario/ingresos`
+  },
+  ADMIN: {
+    ESTADISTICAS: `${API_BASE_URL}/admin/estadisticas`,
+    USUARIOS: {
+      LIST: `${API_BASE_URL}/admin/usuarios`,
+      RECIENTES: `${API_BASE_URL}/admin/usuarios/recientes`,
+      DETAIL: (id: number) => `${API_BASE_URL}/admin/usuarios/${id}`,
+      UPDATE: (id: number) => `${API_BASE_URL}/admin/usuarios/${id}`,
+      DELETE: (id: number) => `${API_BASE_URL}/admin/usuarios/${id}`,
+      CAMBIAR_ROL: (id: number) => `${API_BASE_URL}/admin/usuarios/${id}/rol`
+    },
+    RECINTOS: `${API_BASE_URL}/admin/recintos`,
+    REPORTES: `${API_BASE_URL}/admin/reportes`
   }
 }; 
