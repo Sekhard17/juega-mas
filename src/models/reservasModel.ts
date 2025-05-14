@@ -1,6 +1,5 @@
-import supabase from '@/lib/supabaseClient';
+import { API_ROUTES } from '@/lib/apiConfig';
 import { Reserva, FiltrosReservas } from '@/types/reserva';
-
 
 export const reservasModel = {
   /**
@@ -11,51 +10,41 @@ export const reservasModel = {
     usuarioId?: string
   ): Promise<{ reservas: Reserva[]; total: number }> {
     try {
-      const { 
-        estado, 
-        fecha_desde, 
-        fecha_hasta, 
-        page = 1, 
-        per_page = 10 
-      } = filtros;
-
       // Verificar que tenemos un ID de usuario
       if (!usuarioId) {
         console.error('No se proporcionó un ID de usuario para listarReservasUsuario');
         return { reservas: [], total: 0 };
       }
 
-      let query = supabase
-        .from('vista_reservas_completa')
-        .select('*', { count: 'exact' })
-        .eq('usuario_id', usuarioId)
-        .order('fecha', { ascending: true })
-        .order('hora_inicio', { ascending: true });
-
-      // Aplicar filtros si están presentes
-      if (estado && estado !== 'todas') {
-        query = query.eq('estado', estado);
+      // Construir la URL con los parámetros de filtro
+      const params = new URLSearchParams();
+      
+      if (filtros.estado && filtros.estado !== 'todas') params.append('estado', filtros.estado);
+      if (filtros.fecha_desde) params.append('fecha_desde', filtros.fecha_desde);
+      if (filtros.fecha_hasta) params.append('fecha_hasta', filtros.fecha_hasta);
+      
+      // Parámetros de paginación
+      params.append('page', (filtros.page || 1).toString());
+      params.append('per_page', (filtros.per_page || 10).toString());
+      
+      const url = `${API_ROUTES.RESERVAS.LIST}?${params.toString()}`;
+      
+      // Realizar la solicitud
+      const response = await fetch(url, {
+        headers: {
+          'Authorization': `Bearer ${localStorage.getItem('authToken') || ''}`
+        }
+      });
+      
+      if (!response.ok) {
+        throw new Error('Error al obtener reservas del usuario');
       }
-
-      if (fecha_desde) {
-        query = query.gte('fecha', fecha_desde);
-      }
-
-      if (fecha_hasta) {
-        query = query.lte('fecha', fecha_hasta);
-      }
-
-      // Aplicar paginación
-      const desde = (page - 1) * per_page;
-      query = query.range(desde, desde + per_page - 1);
-
-      const { data, error, count } = await query;
-
-      if (error) throw error;
-
+      
+      const data = await response.json();
+      
       return {
-        reservas: data as Reserva[],
-        total: count || 0,
+        reservas: data.reservas || [],
+        total: data.total || 0,
       };
     } catch (error) {
       console.error('Error al obtener reservas del usuario:', error);
@@ -74,15 +63,19 @@ export const reservasModel = {
         return null;
       }
 
-      const { data, error } = await supabase
-        .from('vista_reservas_completa')
-        .select('*')
-        .eq('id', id)
-        .eq('usuario_id', usuarioId)
-        .single();
-
-      if (error) throw error;
-      return data as Reserva;
+      const url = API_ROUTES.RESERVAS.DETAIL(Number(id));
+      const response = await fetch(url, {
+        headers: {
+          'Authorization': `Bearer ${localStorage.getItem('authToken') || ''}`
+        }
+      });
+      
+      if (!response.ok) {
+        throw new Error(`Error al obtener detalle de la reserva ${id}`);
+      }
+      
+      const reserva = await response.json();
+      return reserva;
     } catch (error) {
       console.error('Error al obtener detalle de la reserva:', error);
       return null;
@@ -101,20 +94,27 @@ export const reservasModel = {
       }
       
       const fechaActual = new Date().toISOString().split('T')[0]; // Formato YYYY-MM-DD
-
-      const { data, error } = await supabase
-        .from('vista_reservas_completa')
-        .select('*')
-        .eq('usuario_id', usuarioId)
-        .gte('fecha', fechaActual)
-        .in('estado', ['pendiente', 'confirmada'])
-        .order('fecha', { ascending: true })
-        .order('hora_inicio', { ascending: true })
-        .limit(limite);
-
-      if (error) throw error;
-
-      return data as Reserva[];
+      
+      // Construir la URL con los parámetros
+      const params = new URLSearchParams();
+      params.append('fecha_desde', fechaActual);
+      params.append('limite', limite.toString());
+      params.append('estado', 'pendiente,confirmada');
+      
+      const url = `${API_ROUTES.RESERVAS.LIST}/proximas?${params.toString()}`;
+      
+      const response = await fetch(url, {
+        headers: {
+          'Authorization': `Bearer ${localStorage.getItem('authToken') || ''}`
+        }
+      });
+      
+      if (!response.ok) {
+        throw new Error('Error al obtener próximas reservas');
+      }
+      
+      const data = await response.json();
+      return data.reservas || [];
     } catch (error) {
       console.error('Error al obtener próximas reservas:', error);
       throw error; // Re-lanzar el error para que pueda ser manejado por el componente
@@ -135,44 +135,32 @@ export const reservasModel = {
         };
       }
 
-      // Verificar que la reserva pertenece al usuario y está en un estado que se puede cancelar
-      const { data: reserva } = await supabase
-        .from('reservas')
-        .select('*')
-        .eq('id', id)
-        .eq('usuario_id', usuarioId)
-        .in('estado', ['pendiente', 'confirmada'])
-        .single();
-
-      if (!reserva) {
-        return {
-          success: false,
-          message: 'No se encontró la reserva o no puede ser cancelada',
-        };
+      const url = API_ROUTES.RESERVAS.CANCEL(Number(id));
+      const response = await fetch(url, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${localStorage.getItem('authToken') || ''}`
+        },
+        body: JSON.stringify({ motivo })
+      });
+      
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Error al cancelar la reserva');
       }
-
-      // Actualizar estado de la reserva
-      const { error } = await supabase
-        .from('reservas')
-        .update({
-          estado: 'cancelada',
-          motivo_cancelacion: motivo,
-          cancelado_por: usuarioId,
-          updated_at: new Date(),
-        })
-        .eq('id', id);
-
-      if (error) throw error;
-
+      
+      const data = await response.json();
+      
       return {
         success: true,
-        message: 'Reserva cancelada correctamente',
+        message: data.message || 'Reserva cancelada correctamente',
       };
     } catch (error) {
       console.error('Error al cancelar reserva:', error);
       return {
         success: false,
-        message: 'Ocurrió un error al cancelar la reserva',
+        message: error instanceof Error ? error.message : 'Ocurrió un error al cancelar la reserva',
       };
     }
   },

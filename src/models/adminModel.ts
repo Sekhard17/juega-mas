@@ -28,14 +28,7 @@ const adminModel = {
     try {
       const response = await fetch(API_ROUTES.ADMIN.ESTADISTICAS);
       if (!response.ok) {
-        console.warn('API no disponible, devolviendo datos de ejemplo');
-        // Estructura temporal sin datos simulados
-        return {
-          totalClientes: 0,
-          totalPropietarios: 0,
-          totalRecintos: 0,
-          suscripcionesActivas: 0
-        };
+        throw new Error('Error al obtener estadísticas');
       }
       
       const data = await response.json();
@@ -61,20 +54,8 @@ const adminModel = {
       const url = `${API_ROUTES.ADMIN.USUARIOS.RECIENTES}?limite=${limite}`;
       const response = await fetch(url);
       
-      // Si la API no está disponible, usamos Supabase directamente como fallback
       if (!response.ok) {
-        console.warn('API no disponible, utilizando conexión directa a Supabase');
-        // Importación dinámica para evitar cargar Supabase innecesariamente si la API está disponible
-        const { default: supabase } = await import('@/lib/supabaseClient');
-        
-        const { data, error } = await supabase
-          .from('usuarios')
-          .select('id, nombre, email, foto_perfil, role, created_at, telefono')
-          .order('created_at', { ascending: false })
-          .limit(limite);
-          
-        if (error) throw error;
-        return data || [];
+        throw new Error('Error al obtener usuarios recientes');
       }
       
       const data = await response.json();
@@ -95,23 +76,8 @@ const adminModel = {
       const url = `${API_ROUTES.ADMIN.USUARIOS.LIST}?pagina=${pagina}&limite=${porPagina}`;
       const response = await fetch(url);
       
-      // Si la API no está disponible, usamos Supabase directamente como fallback
       if (!response.ok) {
-        console.warn('API no disponible, utilizando conexión directa a Supabase');
-        // Importación dinámica para evitar cargar Supabase innecesariamente si la API está disponible
-        const { default: supabase } = await import('@/lib/supabaseClient');
-        
-        const desde = (pagina - 1) * porPagina;
-        const hasta = desde + porPagina - 1;
-        
-        const { data, error } = await supabase
-          .from('usuarios')
-          .select('id, nombre, email, foto_perfil, role, created_at, telefono')
-          .order('created_at', { ascending: false })
-          .range(desde, hasta);
-          
-        if (error) throw error;
-        return data || [];
+        throw new Error('Error al obtener listado de usuarios');
       }
       
       const data = await response.json();
@@ -119,6 +85,49 @@ const adminModel = {
     } catch (error) {
       console.error('Error al obtener listado de usuarios:', error);
       return [];
+    }
+  },
+
+  /**
+   * Obtener detalles de un usuario por ID
+   * @param userId ID del usuario
+   */
+  async obtenerDetallesUsuario(userId: number): Promise<Usuario | null> {
+    try {
+      const url = API_ROUTES.ADMIN.USUARIOS.DETAIL(userId);
+      const response = await fetch(url);
+      
+      if (!response.ok) {
+        throw new Error(`Error al obtener detalles del usuario ${userId}`);
+      }
+      
+      const data = await response.json();
+      return data.usuario || null;
+    } catch (error) {
+      console.error('Error al obtener detalles del usuario:', error);
+      return null;
+    }
+  },
+
+  /**
+   * Eliminar un usuario
+   * @param userId ID del usuario a eliminar
+   */
+  async eliminarUsuario(userId: number): Promise<boolean> {
+    try {
+      const url = API_ROUTES.ADMIN.USUARIOS.DELETE(userId);
+      const response = await fetch(url, {
+        method: 'DELETE'
+      });
+      
+      if (!response.ok) {
+        throw new Error(`Error al eliminar usuario ${userId}`);
+      }
+      
+      return true;
+    } catch (error) {
+      console.error('Error al eliminar usuario:', error);
+      return false;
     }
   }
 };

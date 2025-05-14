@@ -1,4 +1,4 @@
-import supabase from '@/lib/supabaseClient';
+import { API_ROUTES } from '@/lib/apiConfig';
 
 export interface MensajeContacto {
   id?: number;
@@ -19,24 +19,26 @@ export const contactoModel = {
    */
   async crearMensaje(mensajeData: MensajeContacto): Promise<MensajeContacto | null> {
     try {
-      const { data, error } = await supabase
-        .from('mensajes_contacto')
-        .insert([
-          {
-            nombre: mensajeData.nombre,
-            email: mensajeData.email,
-            telefono: mensajeData.telefono || null,
-            asunto: mensajeData.asunto,
-            mensaje: mensajeData.mensaje,
-            leido: false,
-            respondido: false
-          }
-        ])
-        .select();
+      const response = await fetch(API_ROUTES.CONTACTO.ENVIAR, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          nombre: mensajeData.nombre,
+          email: mensajeData.email,
+          telefono: mensajeData.telefono || null,
+          asunto: mensajeData.asunto,
+          mensaje: mensajeData.mensaje
+        })
+      });
 
-      if (error) throw error;
-      
-      return data[0] as MensajeContacto;
+      if (!response.ok) {
+        throw new Error('Error al enviar mensaje de contacto');
+      }
+
+      const data = await response.json();
+      return data.mensaje as MensajeContacto;
     } catch (error) {
       console.error('Error al crear mensaje de contacto:', error);
       return null;
@@ -48,14 +50,19 @@ export const contactoModel = {
    */
   async obtenerMensajes(): Promise<MensajeContacto[]> {
     try {
-      const { data, error } = await supabase
-        .from('mensajes_contacto')
-        .select('*')
-        .order('created_at', { ascending: false });
+      const url = API_ROUTES.CONTACTO.MENSAJES;
+      const response = await fetch(url, {
+        headers: {
+          'Authorization': `Bearer ${localStorage.getItem('authToken') || ''}`
+        }
+      });
 
-      if (error) throw error;
-      
-      return data as MensajeContacto[];
+      if (!response.ok) {
+        throw new Error('Error al obtener mensajes de contacto');
+      }
+
+      const data = await response.json();
+      return data.mensajes as MensajeContacto[];
     } catch (error) {
       console.error('Error al obtener mensajes de contacto:', error);
       return [];
@@ -67,13 +74,18 @@ export const contactoModel = {
    */
   async marcarComoLeido(mensajeId: number): Promise<boolean> {
     try {
-      const { error } = await supabase
-        .from('mensajes_contacto')
-        .update({ leido: true })
-        .eq('id', mensajeId);
+      const url = API_ROUTES.CONTACTO.LEER(mensajeId);
+      const response = await fetch(url, {
+        method: 'PUT',
+        headers: {
+          'Authorization': `Bearer ${localStorage.getItem('authToken') || ''}`
+        }
+      });
 
-      if (error) throw error;
-      
+      if (!response.ok) {
+        throw new Error('Error al marcar mensaje como leído');
+      }
+
       return true;
     } catch (error) {
       console.error('Error al marcar mensaje como leído:', error);
@@ -86,13 +98,18 @@ export const contactoModel = {
    */
   async marcarComoRespondido(mensajeId: number): Promise<boolean> {
     try {
-      const { error } = await supabase
-        .from('mensajes_contacto')
-        .update({ respondido: true })
-        .eq('id', mensajeId);
+      const url = API_ROUTES.CONTACTO.RESPONDER(mensajeId);
+      const response = await fetch(url, {
+        method: 'PUT',
+        headers: {
+          'Authorization': `Bearer ${localStorage.getItem('authToken') || ''}`
+        }
+      });
 
-      if (error) throw error;
-      
+      if (!response.ok) {
+        throw new Error('Error al marcar mensaje como respondido');
+      }
+
       return true;
     } catch (error) {
       console.error('Error al marcar mensaje como respondido:', error);

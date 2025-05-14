@@ -33,7 +33,10 @@ export const API_ROUTES = {
     CANCEL: (id: number) => `${API_BASE_URL}/reservas/${id}/cancel`,
   },
   CONTACTO: {
-    ENVIAR: `${API_BASE_URL}/contacto`
+    ENVIAR: `${API_BASE_URL}/contacto`,
+    MENSAJES: `${API_BASE_URL}/contacto/mensajes`,
+    LEER: (id: number) => `${API_BASE_URL}/contacto/${id}/leer`,
+    RESPONDER: (id: number) => `${API_BASE_URL}/contacto/${id}/responder`
   },
   PROPIETARIO: {
     DASHBOARD: `${API_BASE_URL}/propietario/dashboard`,

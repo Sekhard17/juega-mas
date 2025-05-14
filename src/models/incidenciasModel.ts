@@ -1,4 +1,4 @@
-import supabase from '@/lib/supabaseClient';
+import { API_ROUTES } from '@/lib/apiConfig';
 import { Incidencia, FiltrosIncidencia, RespuestaIncidencia, TipoIncidencia } from '@/types/incidencia';
 
 export const incidenciasModel = {
@@ -35,25 +35,33 @@ export const incidenciasModel = {
         fecha_creacion: new Date().toISOString()
       };
 
-      // Insertar en base de datos
-      const { data, error } = await supabase
-        .from('incidencias')
-        .insert(incidenciaData)
-        .select()
-        .single();
+      // Realizar la solicitud a la API
+      const response = await fetch(API_ROUTES.INCIDENCIAS.CREATE, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${localStorage.getItem('authToken') || ''}`
+        },
+        body: JSON.stringify(incidenciaData)
+      });
 
-      if (error) throw error;
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Error al crear incidencia');
+      }
+
+      const data = await response.json();
 
       return {
         success: true,
-        message: 'Incidencia reportada correctamente',
-        incidencia: data as Incidencia
+        message: data.message || 'Incidencia reportada correctamente',
+        incidencia: data.incidencia
       };
     } catch (error) {
       console.error('Error al crear incidencia:', error);
       return {
         success: false,
-        message: 'Ocurrió un error al reportar la incidencia'
+        message: error instanceof Error ? error.message : 'Ocurrió un error al reportar la incidencia'
       };
     }
   },
@@ -66,60 +74,43 @@ export const incidenciasModel = {
     usuarioId?: string
   ): Promise<{ incidencias: Incidencia[]; total: number }> {
     try {
-      const { 
-        tipo, 
-        estado, 
-        fecha_desde, 
-        fecha_hasta, 
-        reserva_id,
-        page = 1, 
-        per_page = 10 
-      } = filtros;
-
       // Verificar que tenemos un ID de usuario
       if (!usuarioId) {
         console.error('No se proporcionó un ID de usuario para listarIncidenciasUsuario');
         return { incidencias: [], total: 0 };
       }
 
-      let query = supabase
-        .from('incidencias')
-        .select('*', { count: 'exact' })
-        .eq('usuario_id', usuarioId)
-        .order('fecha_creacion', { ascending: false });
-
-      // Aplicar filtros si están presentes
-      if (tipo) {
-        query = query.eq('tipo', tipo);
+      // Construir la URL con los parámetros de filtro
+      const params = new URLSearchParams();
+      
+      if (filtros.tipo) params.append('tipo', filtros.tipo);
+      if (filtros.estado) params.append('estado', filtros.estado);
+      if (filtros.fecha_desde) params.append('fecha_desde', filtros.fecha_desde);
+      if (filtros.fecha_hasta) params.append('fecha_hasta', filtros.fecha_hasta);
+      if (filtros.reserva_id) params.append('reserva_id', filtros.reserva_id);
+      
+      // Parámetros de paginación
+      params.append('page', (filtros.page || 1).toString());
+      params.append('per_page', (filtros.per_page || 10).toString());
+      
+      const url = `${API_ROUTES.INCIDENCIAS.LIST}?${params.toString()}`;
+      
+      // Realizar la solicitud
+      const response = await fetch(url, {
+        headers: {
+          'Authorization': `Bearer ${localStorage.getItem('authToken') || ''}`
+        }
+      });
+      
+      if (!response.ok) {
+        throw new Error('Error al obtener incidencias del usuario');
       }
-
-      if (estado) {
-        query = query.eq('estado', estado);
-      }
-
-      if (fecha_desde) {
-        query = query.gte('fecha_creacion', fecha_desde);
-      }
-
-      if (fecha_hasta) {
-        query = query.lte('fecha_creacion', fecha_hasta);
-      }
-
-      if (reserva_id) {
-        query = query.eq('reserva_id', reserva_id);
-      }
-
-      // Aplicar paginación
-      const desde = (page - 1) * per_page;
-      query = query.range(desde, desde + per_page - 1);
-
-      const { data, error, count } = await query;
-
-      if (error) throw error;
-
+      
+      const data = await response.json();
+      
       return {
-        incidencias: data as Incidencia[],
-        total: count || 0,
+        incidencias: data.incidencias || [],
+        total: data.total || 0,
       };
     } catch (error) {
       console.error('Error al obtener incidencias del usuario:', error);
@@ -138,15 +129,19 @@ export const incidenciasModel = {
         return null;
       }
 
-      const { data, error } = await supabase
-        .from('incidencias')
-        .select('*')
-        .eq('id', id)
-        .eq('usuario_id', usuarioId)
-        .single();
-
-      if (error) throw error;
-      return data as Incidencia;
+      const url = API_ROUTES.INCIDENCIAS.DETAIL(id);
+      const response = await fetch(url, {
+        headers: {
+          'Authorization': `Bearer ${localStorage.getItem('authToken') || ''}`
+        }
+      });
+      
+      if (!response.ok) {
+        throw new Error(`Error al obtener detalle de la incidencia ${id}`);
+      }
+      
+      const incidencia = await response.json();
+      return incidencia;
     } catch (error) {
       console.error('Error al obtener detalle de la incidencia:', error);
       return null;
@@ -174,44 +169,39 @@ export const incidenciasModel = {
         };
       }
 
-      // Verificar que la incidencia pertenece al usuario
-      const { data: incidencia } = await supabase
-        .from('incidencias')
-        .select('*')
-        .eq('id', id)
-        .eq('usuario_id', usuarioId)
-        .single();
-
-      if (!incidencia) {
-        return {
-          success: false,
-          message: 'No se encontró la incidencia o no tienes permiso para editarla',
-        };
-      }
-
       // Preparar datos a actualizar
       const datosActualizados = {
         ...actualizaciones,
         fecha_actualizacion: new Date().toISOString(),
       };
 
-      // Actualizar incidencia
-      const { error } = await supabase
-        .from('incidencias')
-        .update(datosActualizados)
-        .eq('id', id);
-
-      if (error) throw error;
+      // Realizar la solicitud
+      const url = API_ROUTES.INCIDENCIAS.UPDATE(id);
+      const response = await fetch(url, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${localStorage.getItem('authToken') || ''}`
+        },
+        body: JSON.stringify(datosActualizados)
+      });
+      
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Error al actualizar incidencia');
+      }
+      
+      const data = await response.json();
 
       return {
         success: true,
-        message: 'Incidencia actualizada correctamente',
+        message: data.message || 'Incidencia actualizada correctamente',
       };
     } catch (error) {
       console.error('Error al actualizar incidencia:', error);
       return {
         success: false,
-        message: 'Ocurrió un error al actualizar la incidencia',
+        message: error instanceof Error ? error.message : 'Ocurrió un error al actualizar la incidencia',
       };
     }
   },
@@ -230,42 +220,31 @@ export const incidenciasModel = {
         };
       }
 
-      // Verificar que la incidencia pertenece al usuario y está en un estado válido
-      const { data: incidencia } = await supabase
-        .from('incidencias')
-        .select('*')
-        .eq('id', id)
-        .eq('usuario_id', usuarioId)
-        .in('estado', ['pendiente', 'en_revision'])
-        .single();
-
-      if (!incidencia) {
-        return {
-          success: false,
-          message: 'No se encontró la incidencia, no tienes permiso para cerrarla, o ya está cerrada/resuelta',
-        };
+      // Realizar la solicitud
+      const url = API_ROUTES.INCIDENCIAS.CERRAR(id);
+      const response = await fetch(url, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${localStorage.getItem('authToken') || ''}`
+        }
+      });
+      
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Error al cerrar incidencia');
       }
-
-      // Cerrar incidencia
-      const { error } = await supabase
-        .from('incidencias')
-        .update({
-          estado: 'cerrada',
-          fecha_actualizacion: new Date().toISOString(),
-        })
-        .eq('id', id);
-
-      if (error) throw error;
+      
+      const data = await response.json();
 
       return {
         success: true,
-        message: 'Incidencia cerrada correctamente',
+        message: data.message || 'Incidencia cerrada correctamente',
       };
     } catch (error) {
       console.error('Error al cerrar incidencia:', error);
       return {
         success: false,
-        message: 'Ocurrió un error al cerrar la incidencia',
+        message: error instanceof Error ? error.message : 'Ocurrió un error al cerrar la incidencia',
       };
     }
   },
@@ -287,25 +266,21 @@ export const incidenciasModel = {
         return { total: 0, pendientes: 0, en_revision: 0, resueltas: 0, cerradas: 0 };
       }
 
-      // Obtener todas las incidencias del usuario
-      const { data, error } = await supabase
-        .from('incidencias')
-        .select('estado')
-        .eq('usuario_id', usuarioId);
-
-      if (error) throw error;
-
-      // Calcular estadísticas
-      const incidencias = data || [];
-      const estadisticas = {
-        total: incidencias.length,
-        pendientes: incidencias.filter(inc => inc.estado === 'pendiente').length,
-        en_revision: incidencias.filter(inc => inc.estado === 'en_revision').length,
-        resueltas: incidencias.filter(inc => inc.estado === 'resuelta').length,
-        cerradas: incidencias.filter(inc => inc.estado === 'cerrada').length,
-      };
-
-      return estadisticas;
+      // Realizar solicitud a la API para obtener estadísticas
+      const url = `${API_ROUTES.INCIDENCIAS.ESTADISTICAS}`;
+      const response = await fetch(url, {
+        headers: {
+          'Authorization': `Bearer ${localStorage.getItem('authToken') || ''}`
+        }
+      });
+      
+      if (!response.ok) {
+        throw new Error('Error al obtener estadísticas de incidencias');
+      }
+      
+      const estadisticas = await response.json();
+      
+      return estadisticas || { total: 0, pendientes: 0, en_revision: 0, resueltas: 0, cerradas: 0 };
     } catch (error) {
       console.error('Error al obtener estadísticas de incidencias:', error);
       return { total: 0, pendientes: 0, en_revision: 0, resueltas: 0, cerradas: 0 };
