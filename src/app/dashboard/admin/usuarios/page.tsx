@@ -5,13 +5,34 @@ import RoleGuard from '@/components/dashboard/shared/RoleGuard';
 import { UserManagementTable } from '@/components/dashboard/admin/usuarios/UserManagementTable';
 import { UserFilters } from '@/components/dashboard/admin/usuarios/UserFilters';
 import { UserStats } from '@/components/dashboard/admin/usuarios/UserStats';
+import { CreateUserForm } from '@/components/dashboard/admin/usuarios/CreateUserForm';
+import adminModel, { NuevoUsuario } from '@/models/adminModel';
+import { toast } from 'sonner';
 
 export default function UsersManagementPage() {
   const [isLoading, setIsLoading] = useState(true);
+  const [showCreateModal, setShowCreateModal] = useState(false);
   
   useEffect(() => {
     document.title = 'Gestión de Usuarios | JuegaMás';
   }, []);
+
+  const handleCreateUser = async (nuevoUsuario: NuevoUsuario) => {
+    try {
+      const usuario = await adminModel.crearUsuario(nuevoUsuario);
+      if (!usuario) throw new Error('Error al crear usuario');
+      
+      toast.success('Usuario creado correctamente');
+      setShowCreateModal(false);
+      
+      // Recargar tabla para mostrar el nuevo usuario
+      // La tabla se recarga automáticamente al cambiar algún estado
+      setIsLoading(true);
+    } catch (error) {
+      console.error('Error al crear usuario:', error);
+      toast.error('Error al crear el usuario');
+    }
+  };
 
   return (
     <RoleGuard allowedRoles={['admin']}>
@@ -31,7 +52,9 @@ export default function UsersManagementPage() {
           <UserStats isLoading={isLoading} />
 
           {/* Filtros y búsqueda */}
-          <UserFilters />
+          <UserFilters 
+            onCreateUser={() => setShowCreateModal(true)} 
+          />
 
           {/* Tabla de usuarios */}
           <div className="mt-6 bg-white dark:bg-gray-800 rounded-lg shadow">
@@ -42,6 +65,20 @@ export default function UsersManagementPage() {
           </div>
         </div>
       </div>
+
+      {/* Modal para crear usuarios */}
+      {showCreateModal && (
+        <div className="fixed inset-0 overflow-y-auto z-50 flex items-center justify-center" aria-labelledby="modal-title" role="dialog" aria-modal="true">
+          <div className="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity" onClick={() => setShowCreateModal(false)}></div>
+          
+          <div className="inline-block align-bottom bg-white dark:bg-gray-800 rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full">
+            <CreateUserForm 
+              onSubmit={handleCreateUser} 
+              onCancel={() => setShowCreateModal(false)} 
+            />
+          </div>
+        </div>
+      )}
     </RoleGuard>
   );
 } 
