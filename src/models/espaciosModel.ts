@@ -123,6 +123,19 @@ export const espaciosModel = {
   },
 
   /**
+   * Alias de obtenerEspacio - Obtiene un espacio por su ID
+   */
+  async getEspacioById(espacioId: number): Promise<{ data: EspacioDeportivo | null; error: any }> {
+    try {
+      const espacio = await this.obtenerEspacio(espacioId);
+      return { data: espacio, error: null };
+    } catch (error) {
+      console.error(`Error al obtener espacio deportivo ${espacioId}:`, error);
+      return { data: null, error };
+    }
+  },
+
+  /**
    * Obtener disponibilidad horaria de un espacio para una fecha específica
    */
   async obtenerDisponibilidad(espacioId: number, fecha: string): Promise<any> {
