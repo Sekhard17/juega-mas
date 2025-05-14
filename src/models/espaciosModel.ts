@@ -320,7 +320,7 @@ export const espaciosModel = {
   /**
    * Agregar horarios a un espacio deportivo
    */
-  async addHorarios(espacioId: number, horarios: Array<{dia_semana: string, hora_inicio: string, hora_fin: string, disponible: boolean, precio_especial?: number}>) {
+  async addHorarios(espacioId: number, horarios: Array<{dia_semana: number, hora_inicio: string, hora_fin: string, disponible: boolean, precio_especial?: number}>) {
     try {
       const url = `${API_ROUTES.ESPACIOS.UPDATE(espacioId)}/horarios`;
       const response = await fetch(url, {
