@@ -264,6 +264,87 @@ export const espaciosModel = {
   },
 
   /**
+   * Agregar características a un espacio deportivo
+   */
+  async addCaracteristicas(espacioId: number, caracteristicas: Array<{nombre: string, valor: string}>) {
+    try {
+      const url = `${API_ROUTES.ESPACIOS.UPDATE(espacioId)}/caracteristicas`;
+      const response = await fetch(url, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${localStorage.getItem('authToken') || ''}`
+        },
+        body: JSON.stringify({ caracteristicas })
+      });
+      
+      if (!response.ok) {
+        throw new Error(`Error al agregar características al espacio ${espacioId}`);
+      }
+      
+      const data = await response.json();
+      return { data, error: null };
+    } catch (error) {
+      console.error(`Error al agregar características al espacio ${espacioId}:`, error);
+      return { data: null, error };
+    }
+  },
+
+  /**
+   * Agregar imágenes a un espacio deportivo
+   */
+  async addImagenes(espacioId: number, imagenes: Array<{url: string, orden: number}>) {
+    try {
+      const url = `${API_ROUTES.ESPACIOS.UPDATE(espacioId)}/imagenes`;
+      const response = await fetch(url, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${localStorage.getItem('authToken') || ''}`
+        },
+        body: JSON.stringify({ imagenes })
+      });
+      
+      if (!response.ok) {
+        throw new Error(`Error al agregar imágenes al espacio ${espacioId}`);
+      }
+      
+      const data = await response.json();
+      return { data, error: null };
+    } catch (error) {
+      console.error(`Error al agregar imágenes al espacio ${espacioId}:`, error);
+      return { data: null, error };
+    }
+  },
+
+  /**
+   * Agregar horarios a un espacio deportivo
+   */
+  async addHorarios(espacioId: number, horarios: Array<{dia_semana: string, hora_inicio: string, hora_fin: string, disponible: boolean, precio_especial?: number}>) {
+    try {
+      const url = `${API_ROUTES.ESPACIOS.UPDATE(espacioId)}/horarios`;
+      const response = await fetch(url, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${localStorage.getItem('authToken') || ''}`
+        },
+        body: JSON.stringify({ horarios })
+      });
+      
+      if (!response.ok) {
+        throw new Error(`Error al agregar horarios al espacio ${espacioId}`);
+      }
+      
+      const data = await response.json();
+      return { data, error: null };
+    } catch (error) {
+      console.error(`Error al agregar horarios al espacio ${espacioId}:`, error);
+      return { data: null, error };
+    }
+  },
+
+  /**
    * Actualizar un espacio existente
    */
   async updateEspacio(espacioId: number, espacioData: any) {
