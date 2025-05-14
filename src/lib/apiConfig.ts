@@ -38,6 +38,14 @@ export const API_ROUTES = {
     LEER: (id: number) => `${API_BASE_URL}/contacto/${id}/leer`,
     RESPONDER: (id: number) => `${API_BASE_URL}/contacto/${id}/responder`
   },
+  INCIDENCIAS: {
+    LIST: `${API_BASE_URL}/incidencias`,
+    CREATE: `${API_BASE_URL}/incidencias`,
+    DETAIL: (id: string) => `${API_BASE_URL}/incidencias/${id}`,
+    UPDATE: (id: string) => `${API_BASE_URL}/incidencias/${id}`,
+    CERRAR: (id: string) => `${API_BASE_URL}/incidencias/${id}/cerrar`,
+    ESTADISTICAS: `${API_BASE_URL}/incidencias/estadisticas`
+  },
   PROPIETARIO: {
     DASHBOARD: `${API_BASE_URL}/propietario/dashboard`,
     RESUMEN: `${API_BASE_URL}/propietario/resumen`,
